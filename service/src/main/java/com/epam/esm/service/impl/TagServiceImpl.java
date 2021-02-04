@@ -2,7 +2,7 @@ package com.epam.esm.service.impl;
 
 import com.epam.esm.TagDao;
 import com.epam.esm.converter.TagDTOToTagEntityConverter;
-import com.epam.esm.converter.TagToTagDTOConverter;
+import com.epam.esm.converter.TagEntityToTagDTOConverter;
 import com.epam.esm.dto.TagDTO;
 import com.epam.esm.entity.Tag;
 import com.epam.esm.exception.DaoException;
@@ -22,16 +22,20 @@ import java.util.stream.Collectors;
 public class TagServiceImpl implements TagService {
 
     @Autowired
-    private TagToTagDTOConverter converterToDTO;
+    private TagEntityToTagDTOConverter converterToDTO;
     @Autowired
     private TagDTOToTagEntityConverter converterToEntity;
-    @Autowired
     private TagDao tagDao;
 
+    @Autowired
+    public TagServiceImpl(TagDao tagDao) {
+        this.tagDao = tagDao;
+    }
+
     @Override
-    public List<TagDTO> findAll() throws ServiceException {
+    public List<TagDTO> findAll(int limit, int page) throws ServiceException {
         try {
-            List<Tag> listOfEntities = tagDao.findAll();
+            List<Tag> listOfEntities = tagDao.findAll(limit, page);
             return listOfEntities.stream()
                     .map(tag -> converterToDTO.apply(tag))
                     .collect(Collectors.toList());
@@ -41,9 +45,9 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public Optional<TagDTO> find(long id) throws ServiceException {
+    public Optional<TagDTO> find(long id, int limit, int page) throws ServiceException {
         try {
-            List<Tag> listFromDao = tagDao.find(id);
+            List<Tag> listFromDao = tagDao.find(id, limit, page);
             Optional<TagDTO> tagToFind = listFromDao.stream()
                     .map(tag -> converterToDTO.apply(tag))
                     .findFirst();

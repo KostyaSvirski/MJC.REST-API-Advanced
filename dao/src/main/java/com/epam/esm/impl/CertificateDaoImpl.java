@@ -10,7 +10,6 @@ import com.epam.esm.pool.DBCPDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -26,10 +25,18 @@ import java.util.List;
 @Repository
 public class CertificateDaoImpl implements GiftCertificateDao {
 
-    @Autowired
-    private DBCPDataSource dataSource;
+    private static final String SQL_COLUMN_ID_TAG = "id_tag";
+    private static final String SQL_COLUMN_NAME_TAG = "name_of_tag";
+    private static final String SQL_COLUMN_ID_CERTIFICATE = "id_certificate";
+    private static final String SQL_COLUMN_NAME_CERTIFICATE = "name_of_certificate";
+    private static final String SQL_COLUMN_DESCRIPTION = "description";
+    private static final String SQL_COLUMN_PRICE = "price";
+    private static final String SQL_COLUMN_DURATION = "duration";
+    private static final String SQL_COLUMN_CREATE_DATE = "create_date";
+    private static final String SQL_COLUMN_LAST_UPDATE_DATE = "last_update_date";
 
-    private static final String SQL_CREATE_CERTIFICATE = "insert into gift_certificate (name, description, price," +
+    private static final String SQL_CREATE_CERTIFICATE = "insert into gift_certificate (name_of_certificate," +
+            " description, price," +
             " duration, create_date, last_update_date) values (?, ?, ?, ?, ?, ?)";
     private static final String SQL_CREATE_JUNCTIONS_WITH_TAGS = "insert into junction_gift_cerficates_and_tags " +
             "(id_certificate, id_tag) values (?, ?)";
@@ -39,56 +46,61 @@ public class CertificateDaoImpl implements GiftCertificateDao {
     private static final String SQL_DELETE_CERTIFICATE = "delete from gift_certificate where id_certificate = ?";
     private static final String SQL_DELETE_JUNCTIONS = "delete from junction_gift_cerficates_and_tags " +
             "where id_certificate = ?";
-    private static final String SQL_UPDATE_CERTIFICATE = "update gift_certificate set name = ?, description = ?," +
+    private static final String SQL_UPDATE_CERTIFICATE = "update gift_certificate set" +
+            " name_of_certificate = ?, description = ?," +
             " price = ?, duration = ? where id_certificate = ?";
     private static final String SQL_FIND_ALL_CERTIFICATES = "select gift_certificate.id_certificate," +
-            " gift_certificate.name, description, price, duration, create_date, last_update_date," +
+            " gift_certificate.name_of_certificate, description, price, duration, create_date, last_update_date," +
             " tag_for_certificates.id_tag," +
-            " tag_for_certificates.name from gift_certificate" +
-            " inner join junction_gift_cerficates_and_tags on gift_certificate.id_certificate =" +
-            " junction_gift_cerficates_and_tags.id_certificate" +
-            " inner join tag_for_certificates on junction_gift_cerficates_and_tags.id_tag =" +
+            " tag_for_certificates.name_of_tag from gift_certificate" +
+            " inner join junction_gift_certificates_and_tags on gift_certificate.id_certificate =" +
+            " junction_gift_certificates_and_tags.id_certificate" +
+            " inner join tag_for_certificates on junction_gift_certificates_and_tags.id_tag =" +
             " tag_for_certificates.id_tag";
     private static final String SQL_FIND_SPECIFIC_CERTIFICATE = "select gift_certificate.id_certificate," +
-            " gift_certificate.name, description, price, duration, create_date, last_update_date," +
+            " gift_certificate.name_of_certificate, description, price, duration, create_date, last_update_date," +
             " tag_for_certificates.id_tag," +
-            " tag_for_certificates.name from gift_certificate" +
-            " inner join junction_gift_cerficates_and_tags on gift_certificate.id_certificate =" +
-            " junction_gift_cerficates_and_tags.id_certificate" +
-            " inner join tag_for_certificates on junction_gift_cerficates_and_tags.id_tag = " +
+            " tag_for_certificates.name_of_tag from gift_certificate" +
+            " inner join junction_gift_certificates_and_tags on gift_certificate.id_certificate =" +
+            " junction_gift_certificates_and_tags.id_certificate" +
+            " inner join tag_for_certificates on junction_gift_certificates_and_tags.id_tag = " +
             " tag_for_certificates.id_tag where gift_certificate.id_certificate = ?";
     private static final String SQL_SEARCH_BY_PART_OF_NAME = "select gift_certificate.id_certificate," +
-            " gift_certificate.name, description, price, duration, create_date, last_update_date," +
+            " gift_certificate.name_of_certificate, description, price, duration, create_date, last_update_date," +
             " tag_for_certificates.id_tag," +
-            " tag_for_certificates.name from gift_certificate" +
-            " inner join junction_gift_cerficates_and_tags on gift_certificate.id_certificate =" +
-            " junction_gift_cerficates_and_tags.id_certificate" +
-            " inner join tag_for_certificates on junction_gift_cerficates_and_tags.id_tag = " +
+            " tag_for_certificates.name_of_tag from gift_certificate" +
+            " inner join junction_gift_certificates_and_tags on gift_certificate.id_certificate =" +
+            " junction_gift_certificates_and_tags.id_certificate" +
+            " inner join tag_for_certificates on junction_gift_certificates_and_tags.id_tag = " +
             " tag_for_certificates.id_tag where gift_certificate.name like ";
     private static final String SQL_SEARCH_BY_PART_OF_DESCRIPTION = "select gift_certificate.id_certificate," +
-            " gift_certificate.name, description, price, duration, create_date, last_update_date," +
+            " gift_certificate.name_of_certificate, description, price, duration, create_date, last_update_date," +
             " tag_for_certificates.id_tag," +
-            " tag_for_certificates.name from gift_certificate" +
-            " inner join junction_gift_cerficates_and_tags on gift_certificate.id_certificate =" +
-            " junction_gift_cerficates_and_tags.id_certificate" +
-            " inner join tag_for_certificates on junction_gift_cerficates_and_tags.id_tag = " +
+            " tag_for_certificates.name_of_tag from gift_certificate" +
+            " inner join junction_gift_certificates_and_tags on gift_certificate.id_certificate =" +
+            " junction_gift_certificates_and_tags.id_certificate" +
+            " inner join tag_for_certificates on junction_gift_certificates_and_tags.id_tag = " +
             " tag_for_certificates.id_tag where gift_certificate.description like ";
     private static final String SQL_SORT_CERTIFICATES = "select gift_certificate.id_certificate," +
-            " gift_certificate.name, description, price, duration, create_date, last_update_date," +
+            " gift_certificate.name_of_certificate, description, price, duration, create_date, last_update_date," +
             " tag_for_certificates.id_tag," +
-            " tag_for_certificates.name from gift_certificate" +
-            " inner join junction_gift_cerficates_and_tags on gift_certificate.id_certificate =" +
-            " junction_gift_cerficates_and_tags.id_certificate" +
-            " inner join tag_for_certificates on junction_gift_cerficates_and_tags.id_tag = " +
+            " tag_for_certificates.name_of_tag from gift_certificate" +
+            " inner join junction_gift_certificates_and_tags on gift_certificate.id_certificate =" +
+            " junction_gift_certificates_and_tags.id_certificate" +
+            " inner join tag_for_certificates on junction_gift_certificates_and_tags.id_tag = " +
             " tag_for_certificates.id_tag order by ";
     private static final String SQL_FIND_BY_TAGS = "select gift_certificate.id_certificate," +
-            " gift_certificate.name, description, price, duration, create_date, last_update_date," +
+            " gift_certificate.name_of_certificate, description, price, duration, create_date, last_update_date," +
             " tag_for_certificates.id_tag," +
-            " tag_for_certificates.name from gift_certificate" +
-            " inner join junction_gift_cerficates_and_tags on gift_certificate.id_certificate =" +
-            " junction_gift_cerficates_and_tags.id_certificate" +
-            " inner join tag_for_certificates on junction_gift_cerficates_and_tags.id_tag = " +
+            " tag_for_certificates.name_of_tag from gift_certificate" +
+            " inner join junction_gift_certificates_and_tags on gift_certificate.id_certificate =" +
+            " junction_gift_certificates_and_tags.id_certificate" +
+            " inner join tag_for_certificates on junction_gift_certificates_and_tags.id_tag = " +
             " tag_for_certificates.id_tag where tag_for_certificates.name = ? ";
+    private static final String SQL_SUFFIX_FOR_PAGINATION = "ORDER BY id_certificate LIMIT ? OFFSET ?";
+    
+    @Autowired
+    private DBCPDataSource dataSource;
 
     @Override
     public int create(GiftCertificate certificate) throws DaoException {
@@ -174,13 +186,16 @@ public class CertificateDaoImpl implements GiftCertificateDao {
     }
 
     @Override
-    public List<GiftCertificate> find(long id) throws DaoException {
+    public List<GiftCertificate> find(long id, int limit, int page) throws DaoException {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
             try {
-                PreparedStatement ps = connection.prepareStatement(SQL_FIND_SPECIFIC_CERTIFICATE);
+                PreparedStatement ps = connection.prepareStatement
+                        (SQL_FIND_SPECIFIC_CERTIFICATE + SQL_SUFFIX_FOR_PAGINATION);
                 ps.setInt(1, (int) id);
+                ps.setInt(2, limit);
+                ps.setInt(3, limit * (page - 1));
                 ResultSet rs = ps.executeQuery();
                 List<GiftCertificate> specificCertificates = createFoundList(rs);
                 return specificCertificates;
@@ -195,13 +210,16 @@ public class CertificateDaoImpl implements GiftCertificateDao {
     }
 
     @Override
-    public List<GiftCertificate> findAll() throws DaoException {
+    public List<GiftCertificate> findAll(int limit, int page) throws DaoException {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
             try {
-                PreparedStatement ps = connection.prepareStatement(SQL_FIND_ALL_CERTIFICATES);
+                PreparedStatement ps = connection.prepareStatement
+                        (SQL_FIND_ALL_CERTIFICATES + SQL_SUFFIX_FOR_PAGINATION);
                 ResultSet rs = ps.executeQuery();
+                ps.setInt(1, limit);
+                ps.setInt(2, limit * (page - 1));
                 List<GiftCertificate> allCertificates = createFoundList(rs);
                 return allCertificates;
             } catch (SQLException throwables) {
@@ -253,12 +271,15 @@ public class CertificateDaoImpl implements GiftCertificateDao {
     }
 
     @Override
-    public List<GiftCertificate> sortCertificates(String field, String method) throws DaoException {
+    public List<GiftCertificate> sortCertificates(String field, String method, int limit, int page)
+            throws DaoException {
         try {
             Connection connection = dataSource.getConnection();
             try {
                 String specificRequest = createSpecificRequestForSort(field, method);
                 PreparedStatement ps = connection.prepareStatement(specificRequest);
+                ps.setInt(1, limit);
+                ps.setInt(2, (page - 1) * limit);
                 ResultSet rs = ps.executeQuery();
                 return createFoundList(rs);
             } catch (SQLException throwables) {
@@ -273,22 +294,24 @@ public class CertificateDaoImpl implements GiftCertificateDao {
     }
 
     @Override
-    public List<GiftCertificate> searchByName(String name) throws DaoException {
-        return searchCertificatesByParam(name, SQL_SEARCH_BY_PART_OF_NAME);
+    public List<GiftCertificate> searchByName(String name, int limit, int page) throws DaoException {
+        return searchCertificatesByParam(name, SQL_SEARCH_BY_PART_OF_NAME, limit, page);
     }
 
     @Override
-    public List<GiftCertificate> searchByDescription(String description) throws DaoException {
-        return searchCertificatesByParam(description, SQL_SEARCH_BY_PART_OF_DESCRIPTION);
+    public List<GiftCertificate> searchByDescription(String description, int limit, int page) throws DaoException {
+        return searchCertificatesByParam(description, SQL_SEARCH_BY_PART_OF_DESCRIPTION, limit, page);
     }
 
-    private List<GiftCertificate> searchCertificatesByParam(String param, String sqlSearchRequest)
+    private List<GiftCertificate> searchCertificatesByParam(String param, String sqlSearchRequest, int limit, int page)
             throws DaoException {
         try {
             Connection connection = dataSource.getConnection();
             try {
-                String specificRequest = createSpecificRequest(param, sqlSearchRequest);
+                String specificRequest = createSpecificRequestForPartSearch(param, sqlSearchRequest);
                 PreparedStatement ps = connection.prepareStatement(specificRequest);
+                ps.setInt(1, limit);
+                ps.setInt(2, limit * (page - 1));
                 ResultSet rs = ps.executeQuery();
                 return createFoundList(rs);
             } catch (SQLException throwables) {
@@ -302,12 +325,14 @@ public class CertificateDaoImpl implements GiftCertificateDao {
     }
 
     @Override
-    public List<GiftCertificate> searchByTag(String nameOfTag) throws DaoException {
+    public List<GiftCertificate> searchByTag(String nameOfTag, int limit, int page) throws DaoException {
         try {
             Connection connection = dataSource.getConnection();
             try {
-                PreparedStatement ps = connection.prepareStatement(SQL_FIND_BY_TAGS);
+                PreparedStatement ps = connection.prepareStatement(SQL_FIND_BY_TAGS + SQL_SUFFIX_FOR_PAGINATION);
                 ps.setString(1, nameOfTag);
+                ps.setInt(2, limit);
+                ps.setInt(3, limit * (page - 1));
                 ResultSet rs = ps.executeQuery();
                 return createFoundList(rs);
             } catch (SQLException throwables) {
@@ -326,15 +351,15 @@ public class CertificateDaoImpl implements GiftCertificateDao {
         boolean flag;
         while (rs.next()) {
             flag = false;
-            long id = rs.getLong(1);
-            String name = rs.getString(2);
-            String description = rs.getString(3);
-            long price = rs.getLong(4);
-            LocalDate duration = rs.getDate(5).toLocalDate();
-            LocalDateTime createDate = rs.getTimestamp(6).toLocalDateTime();
-            LocalDateTime lastUpdateDate = rs.getTimestamp(7).toLocalDateTime();
-            long idTag = rs.getLong(8);
-            String nameOfTag = rs.getString(9);
+            long id = rs.getLong(SQL_COLUMN_ID_CERTIFICATE);
+            String name = rs.getString(SQL_COLUMN_NAME_CERTIFICATE);
+            String description = rs.getString(SQL_COLUMN_DESCRIPTION);
+            long price = rs.getLong(SQL_COLUMN_PRICE);
+            LocalDate duration = rs.getDate(SQL_COLUMN_DURATION).toLocalDate();
+            LocalDateTime createDate = rs.getTimestamp(SQL_COLUMN_CREATE_DATE).toLocalDateTime();
+            LocalDateTime lastUpdateDate = rs.getTimestamp(SQL_COLUMN_LAST_UPDATE_DATE).toLocalDateTime();
+            long idTag = rs.getLong(SQL_COLUMN_ID_TAG);
+            String nameOfTag = rs.getString(SQL_COLUMN_NAME_TAG);
             for (GiftCertificate existCertificate : resultList) {
                 if (existCertificate.getId() == id) {
                     existCertificate.setTagsDependsOnCertificate(new Tag.TagBuilder().buildId(idTag)
@@ -369,14 +394,16 @@ public class CertificateDaoImpl implements GiftCertificateDao {
         sb.append(field);
         sb.append(" ");
         sb.append(method);
+        sb.append(SQL_SUFFIX_FOR_PAGINATION);
         return sb.toString();
     }
 
-    private String createSpecificRequest(String param, String baseRequest) {
+    private String createSpecificRequestForPartSearch(String param, String baseRequest) {
         StringBuilder sb = new StringBuilder(baseRequest);
         sb.append("'%");
         sb.append(param);
         sb.append("%'");
+        sb.append(SQL_SUFFIX_FOR_PAGINATION);
         return sb.toString();
     }
 

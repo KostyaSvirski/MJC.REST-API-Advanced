@@ -1,6 +1,7 @@
 package com.epam.esm.entity;
 
 import com.epam.esm.converter.TagDTOToTagEntityConverter;
+import com.epam.esm.dto.GiftCertificateDTO;
 import com.epam.esm.dto.TagDTO;
 
 import java.time.Instant;
@@ -140,7 +141,6 @@ public class GiftCertificate {
     }
 
     public static class GiftCertificateBuilder {
-
 
         private GiftCertificate newGiftCertificate;
 

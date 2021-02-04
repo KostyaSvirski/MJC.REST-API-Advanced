@@ -1,12 +1,13 @@
 package com.epam.esm.dto;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class GiftCertificateDTO {
+public class GiftCertificateDTO extends RepresentationModel<GiftCertificateDTO> {
 
     private long id;
     private String name;
@@ -132,16 +133,15 @@ public class GiftCertificateDTO {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("GiftCertificateDTO{");
-        sb.append("id=").append(id);
-        sb.append(", name='").append(name).append('\'');
-        sb.append(", description='").append(description).append('\'');
-        sb.append(", price=").append(price);
-        sb.append(", duration=").append(duration);
-        sb.append(", createDate=").append(createDate);
-        sb.append(", lastUpdateDate=").append(lastUpdateDate);
-        sb.append(", tags=").append(tags);
-        sb.append('}');
-        return sb.toString();
+        String sb = "GiftCertificateDTO{" + "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", price=" + price +
+                ", duration=" + duration +
+                ", createDate=" + createDate +
+                ", lastUpdateDate=" + lastUpdateDate +
+                ", tags=" + tags +
+                '}';
+        return sb;
     }
 }

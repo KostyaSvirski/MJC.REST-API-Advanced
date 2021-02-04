@@ -4,12 +4,11 @@ import com.epam.esm.dto.GiftCertificateDTO;
 import com.epam.esm.entity.GiftCertificate;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
-public class GiftCertificateToDTOConverter implements Function<GiftCertificate, GiftCertificateDTO> {
+public class GiftCertificateEntityToDTOConverter implements Function<GiftCertificate, GiftCertificateDTO> {
 
     @Override
     public GiftCertificateDTO apply(GiftCertificate giftCertificate) {
@@ -22,7 +21,7 @@ public class GiftCertificateToDTOConverter implements Function<GiftCertificate, 
         dto.setDuration(giftCertificate.getDuration().toString());
         dto.setLastUpdateDate(giftCertificate.getLastUpdateDate().toString());
         dto.setTags(giftCertificate.getTagsDependsOnCertificate().stream()
-                .map(tag -> new TagToTagDTOConverter().apply(tag)).collect(Collectors.toList()));
+                .map(tag -> new TagEntityToTagDTOConverter().apply(tag)).collect(Collectors.toList()));
         return dto;
     }
 }

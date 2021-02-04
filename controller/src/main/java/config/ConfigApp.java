@@ -8,7 +8,7 @@ public class ConfigApp extends AbstractAnnotationConfigDispatcherServletInitiali
 
     @Override
     protected Class<?>[] getRootConfigClasses() {
-        return new Class[]{ConfigWeb.class};
+        return new Class[]{};
     }
 
     @Override

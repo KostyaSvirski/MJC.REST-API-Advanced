@@ -6,13 +6,7 @@ import com.epam.esm.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,10 +19,10 @@ public class TagController {
     TagService tagService;
 
     @GetMapping("/")
-    public ResponseEntity findAllTags() {
+    public ResponseEntity findAllTags(@RequestParam int limit, @RequestParam int page) {
         List<TagDTO> allTags = null;
         try {
-            allTags = tagService.findAll();
+            allTags = tagService.findAll(limit, page);
             return new ResponseEntity(allTags, HttpStatus.OK);
         } catch (ServiceException e) {
             return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -36,10 +30,11 @@ public class TagController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity findSpecificTag(@PathVariable long id) {
+    public ResponseEntity findSpecificTag(@PathVariable long id, @RequestParam int limit,
+                                          @RequestParam int page) {
         Optional<TagDTO> tagToFind = null;
         try {
-            tagToFind = tagService.find(id);
+            tagToFind = tagService.find(id, limit, page);
             return tagToFind.map(tagDTO -> new ResponseEntity(tagDTO, HttpStatus.OK))
                     .orElseGet(() -> new ResponseEntity("not found", HttpStatus.NOT_FOUND));
         } catch (ServiceException e) {

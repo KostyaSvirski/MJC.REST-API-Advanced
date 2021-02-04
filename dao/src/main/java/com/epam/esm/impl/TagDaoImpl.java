@@ -18,8 +18,8 @@ import java.util.List;
 @Repository
 public class TagDaoImpl implements TagDao {
 
-    @Autowired
-    private DBCPDataSource dataSource;
+    private static final String SQL_COLUMN_ID = "id_tag";
+    private static final String SQL_COLUMN_NAME = "name_of_tag";
 
     private static final String SQL_CREATE_TAG = "insert into tag_for_certificates (name) values (?)";
     private static final String SQL_DELETE_JUNCTIONS = "delete from junction_gift_cerficates_and_tags where id_tag = ?";
@@ -30,6 +30,10 @@ public class TagDaoImpl implements TagDao {
             " from tag_for_certificates" +
             " where tag_for_certificates.id_tag = ?";
     private static final String SQL_FIND_LAST_ID = "select max(id_tag) from tag_for_certificates";
+    private static final String SQL_SUFFIX_FOR_PAGINATION = "ORDER BY id_tag LIMIT ? OFFSET ?";
+
+    @Autowired
+    private DBCPDataSource dataSource;
 
     @Override
     public int create(Tag tag) throws DaoException {
@@ -95,13 +99,16 @@ public class TagDaoImpl implements TagDao {
     }
 
     @Override
-    public List<Tag> find(long id) throws DaoException {
+    public List<Tag> find(long id, int limit, int page) throws DaoException {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
             try {
-                PreparedStatement ps = connection.prepareStatement(SQL_FIND_SPECIFIC_TAGS);
+                PreparedStatement ps = connection.prepareStatement
+                        (SQL_FIND_SPECIFIC_TAGS + SQL_SUFFIX_FOR_PAGINATION);
                 ps.setInt(1, (int)id);
+                ps.setInt(2, limit);
+                ps.setInt(3, (page - 1) * limit);
                 ResultSet rs = ps.executeQuery();
                 List<Tag> listOfEntities = createListOfEntities(rs);
                 return listOfEntities;
@@ -116,12 +123,14 @@ public class TagDaoImpl implements TagDao {
     }
 
     @Override
-    public List<Tag> findAll() throws DaoException {
+    public List<Tag> findAll(int limit, int page) throws DaoException {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
             try {
-                PreparedStatement ps = connection.prepareStatement(SQL_FIND_ALL_TAGS);
+                PreparedStatement ps = connection.prepareStatement(SQL_FIND_ALL_TAGS + SQL_SUFFIX_FOR_PAGINATION);
+                ps.setInt(1, limit);
+                ps.setInt(2, (page - 1) * limit);
                 ResultSet rs = ps.executeQuery();
                 List<Tag> listOfEntities = createListOfEntities(rs);
                 return listOfEntities;
@@ -139,8 +148,8 @@ public class TagDaoImpl implements TagDao {
         List<Tag> resultList = new ArrayList<>();
         while (rs.next()) {
             Tag newTag = new Tag.TagBuilder()
-                    .buildId(Long.parseLong(Integer.toString(rs.getInt(1))))
-                    .buildName(rs.getString(2))
+                    .buildId(Long.parseLong(Integer.toString(rs.getInt(SQL_COLUMN_ID))))
+                    .buildName(rs.getString(SQL_COLUMN_NAME))
                     .finishBuilding();
             resultList.add(newTag);
         }

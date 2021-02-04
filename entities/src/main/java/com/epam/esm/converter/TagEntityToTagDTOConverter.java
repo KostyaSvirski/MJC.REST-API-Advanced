@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import java.util.function.Function;
 
 @Component
-public class TagToTagDTOConverter implements Function<Tag, TagDTO> {
+public class TagEntityToTagDTOConverter implements Function<Tag, TagDTO> {
 
     @Override
     public TagDTO apply(Tag tag) {
