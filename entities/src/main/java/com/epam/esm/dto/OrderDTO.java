@@ -14,6 +14,19 @@ public class OrderDTO extends RepresentationModel<OrderDTO> {
     private String timeOfRelease;
     private boolean isClosed;
 
+    public OrderDTO(long id) {
+        this.id = id;
+    }
+
+    public OrderDTO(long id, long idUser, long idCertificate) {
+        this.id = id;
+        this.idUser = idUser;
+        this.idCertificate = idCertificate;
+    }
+
+    public OrderDTO() {
+    }
+
     public boolean isClosed() {
         return isClosed;
     }

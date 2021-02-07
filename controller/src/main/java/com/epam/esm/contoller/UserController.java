@@ -52,7 +52,7 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<?> retrieveSpecificUser(@PathVariable long id) {
         try {
-            Optional<UserDTO> user = service.find(id, 1, 1);
+            Optional<UserDTO> user = service.find(id);
             if (user.isPresent()) {
                 UserDTO dto = user.get();
                 dto.add(WebMvcLinkBuilder
@@ -84,7 +84,7 @@ public class UserController {
              @RequestParam(defaultValue = "1") int page,
              @PathVariable long id) {
         try {
-            List<OrderDTO> resultList = service.findUsersOrders(id, limit, page);
+            List<OrderDTO> resultList = service.findOrdersOfUser(id, limit, page);
             for(OrderDTO dto : resultList) {
                 dto.add(WebMvcLinkBuilder
                         .linkTo(WebMvcLinkBuilder.methodOn(UserController.class)
@@ -106,10 +106,16 @@ public class UserController {
     public ResponseEntity<?> retrieveOrderOfSpecificUser
             (@PathVariable long idUser, @PathVariable long idOrder) {
         try {
-            Optional<OrderDTO> order = service.findSpecificOrderOfUser(idUser, idOrder, 1, 1);
+            Optional<OrderDTO> order = service.findSpecificOrderOfUser(idUser, idOrder);
             if (order.isPresent()) {
-             /*   OrderDTO dto = order.get();*/
-                // TODO: 04.02.2021
+                order.get().add(WebMvcLinkBuilder
+                        .linkTo(WebMvcLinkBuilder.methodOn(UserController.class)
+                                .retrieveSpecificUser(idUser))
+                        .withRel("user"));
+                order.get().add(WebMvcLinkBuilder
+                        .linkTo(WebMvcLinkBuilder.methodOn(GiftCertificateController.class)
+                                .findSpecificCertificate(order.get().getIdCertificate()))
+                        .withRel("certificate"));
                 return new ResponseEntity<>(order.get(), HttpStatus.OK);
             } else {
                 ActionHypermedia actionHypermedia = new ActionHypermedia

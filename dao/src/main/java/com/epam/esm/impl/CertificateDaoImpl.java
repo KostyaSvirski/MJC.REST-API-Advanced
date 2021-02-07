@@ -6,19 +6,15 @@ import com.epam.esm.entity.Tag;
 import com.epam.esm.exception.DBCPDataSourceException;
 import com.epam.esm.exception.DaoException;
 import com.epam.esm.pool.DBCPDataSource;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.*;
+import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +34,7 @@ public class CertificateDaoImpl implements GiftCertificateDao {
     private static final String SQL_CREATE_CERTIFICATE = "insert into gift_certificate (name_of_certificate," +
             " description, price," +
             " duration, create_date, last_update_date) values (?, ?, ?, ?, ?, ?)";
-    private static final String SQL_CREATE_JUNCTIONS_WITH_TAGS = "insert into junction_gift_cerficates_and_tags " +
+    private static final String SQL_CREATE_JUNCTIONS_WITH_TAGS = "insert into junction_gift_certificates_and_tags " +
             "(id_certificate, id_tag) values (?, ?)";
     private static final String SQL_FIND_ID_SPECIFIC_TAG = "select id_tag from tag_for_certificates " +
             "where id_tag = ?";
@@ -56,7 +52,7 @@ public class CertificateDaoImpl implements GiftCertificateDao {
             " inner join junction_gift_certificates_and_tags on gift_certificate.id_certificate =" +
             " junction_gift_certificates_and_tags.id_certificate" +
             " inner join tag_for_certificates on junction_gift_certificates_and_tags.id_tag =" +
-            " tag_for_certificates.id_tag";
+            " tag_for_certificates.id_tag ";
     private static final String SQL_FIND_SPECIFIC_CERTIFICATE = "select gift_certificate.id_certificate," +
             " gift_certificate.name_of_certificate, description, price, duration, create_date, last_update_date," +
             " tag_for_certificates.id_tag," +
@@ -64,7 +60,7 @@ public class CertificateDaoImpl implements GiftCertificateDao {
             " inner join junction_gift_certificates_and_tags on gift_certificate.id_certificate =" +
             " junction_gift_certificates_and_tags.id_certificate" +
             " inner join tag_for_certificates on junction_gift_certificates_and_tags.id_tag = " +
-            " tag_for_certificates.id_tag where gift_certificate.id_certificate = ?";
+            " tag_for_certificates.id_tag where gift_certificate.id_certificate = ? ";
     private static final String SQL_SEARCH_BY_PART_OF_NAME = "select gift_certificate.id_certificate," +
             " gift_certificate.name_of_certificate, description, price, duration, create_date, last_update_date," +
             " tag_for_certificates.id_tag," +
@@ -98,7 +94,7 @@ public class CertificateDaoImpl implements GiftCertificateDao {
             " inner join tag_for_certificates on junction_gift_certificates_and_tags.id_tag = " +
             " tag_for_certificates.id_tag where tag_for_certificates.name = ? ";
     private static final String SQL_SUFFIX_FOR_PAGINATION = "ORDER BY id_certificate LIMIT ? OFFSET ?";
-    
+
     @Autowired
     private DBCPDataSource dataSource;
 
@@ -186,7 +182,7 @@ public class CertificateDaoImpl implements GiftCertificateDao {
     }
 
     @Override
-    public List<GiftCertificate> find(long id, int limit, int page) throws DaoException {
+    public List<GiftCertificate> find(long id) throws DaoException {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
@@ -194,8 +190,8 @@ public class CertificateDaoImpl implements GiftCertificateDao {
                 PreparedStatement ps = connection.prepareStatement
                         (SQL_FIND_SPECIFIC_CERTIFICATE + SQL_SUFFIX_FOR_PAGINATION);
                 ps.setInt(1, (int) id);
-                ps.setInt(2, limit);
-                ps.setInt(3, limit * (page - 1));
+                ps.setInt(2, 1);
+                ps.setInt(3, 0);
                 ResultSet rs = ps.executeQuery();
                 List<GiftCertificate> specificCertificates = createFoundList(rs);
                 return specificCertificates;
@@ -217,9 +213,9 @@ public class CertificateDaoImpl implements GiftCertificateDao {
             try {
                 PreparedStatement ps = connection.prepareStatement
                         (SQL_FIND_ALL_CERTIFICATES + SQL_SUFFIX_FOR_PAGINATION);
-                ResultSet rs = ps.executeQuery();
                 ps.setInt(1, limit);
                 ps.setInt(2, limit * (page - 1));
+                ResultSet rs = ps.executeQuery();
                 List<GiftCertificate> allCertificates = createFoundList(rs);
                 return allCertificates;
             } catch (SQLException throwables) {

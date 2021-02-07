@@ -21,14 +21,15 @@ import java.util.stream.Collectors;
 @Service
 public class TagServiceImpl implements TagService {
 
-    @Autowired
-    private TagEntityToTagDTOConverter converterToDTO;
-    @Autowired
-    private TagDTOToTagEntityConverter converterToEntity;
-    private TagDao tagDao;
+    private final TagEntityToTagDTOConverter converterToDTO;
+    private final TagDTOToTagEntityConverter converterToEntity;
+    private final TagDao tagDao;
 
     @Autowired
-    public TagServiceImpl(TagDao tagDao) {
+    public TagServiceImpl(TagEntityToTagDTOConverter converterToDTO,
+                          TagDTOToTagEntityConverter converterToEntity, TagDao tagDao) {
+        this.converterToDTO = converterToDTO;
+        this.converterToEntity = converterToEntity;
         this.tagDao = tagDao;
     }
 
@@ -37,7 +38,7 @@ public class TagServiceImpl implements TagService {
         try {
             List<Tag> listOfEntities = tagDao.findAll(limit, page);
             return listOfEntities.stream()
-                    .map(tag -> converterToDTO.apply(tag))
+                    .map(converterToDTO)
                     .collect(Collectors.toList());
         } catch (DaoException e) {
             throw new ServiceException("exception in dao", e.getCause());
@@ -45,13 +46,12 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public Optional<TagDTO> find(long id, int limit, int page) throws ServiceException {
+    public Optional<TagDTO> find(long id) throws ServiceException {
         try {
-            List<Tag> listFromDao = tagDao.find(id, limit, page);
-            Optional<TagDTO> tagToFind = listFromDao.stream()
-                    .map(tag -> converterToDTO.apply(tag))
+            List<Tag> listFromDao = tagDao.find(id);
+            return listFromDao.stream()
+                    .map(converterToDTO)
                     .findFirst();
-            return tagToFind;
         } catch (DaoException e) {
             throw new ServiceException("exception in dao", e.getCause());
         }
@@ -63,8 +63,7 @@ public class TagServiceImpl implements TagService {
         validatorChain.linkWith(new TagNameValidatorLink());
         if (validatorChain.validate(tagDTO)) {
             try {
-                int id = tagDao.create(converterToEntity.apply(tagDTO));
-                return id;
+                return tagDao.create(converterToEntity.apply(tagDTO));
             } catch (DaoException e) {
                 throw new ServiceException("exception in dao", e.getCause());
             }
@@ -72,6 +71,7 @@ public class TagServiceImpl implements TagService {
         return 0;
     }
 
+    // FIXME: 05.02.2021
     @Override
     public void delete(long id) throws ServiceException {
         try {

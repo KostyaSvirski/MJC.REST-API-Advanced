@@ -1,7 +1,6 @@
 package com.epam.esm.impl;
 
 import com.epam.esm.UserDao;
-import com.epam.esm.entity.Order;
 import com.epam.esm.entity.User;
 import com.epam.esm.exception.DBCPDataSourceException;
 import com.epam.esm.exception.DaoException;
@@ -54,7 +53,7 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public List<User> find(long id, int limit, int page) throws DaoException {
+    public List<User> find(long id) throws DaoException {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
@@ -62,8 +61,8 @@ public class UserDaoImpl implements UserDao {
             try {
                 PreparedStatement ps = connection.prepareStatement(specificRequest);
                 ps.setInt(1, (int) id);
-                ps.setInt(2, limit);
-                ps.setInt(3, (page - 1) * limit);
+                ps.setInt(2, 1);
+                ps.setInt(3, 0);
                 ResultSet rs = ps.executeQuery();
                 return createResultList(rs);
             } catch (SQLException throwables) {
@@ -80,13 +79,13 @@ public class UserDaoImpl implements UserDao {
 
     private List<User> createResultList(ResultSet rs) throws SQLException {
         List<User> resultList = new ArrayList<>();
-        while(rs.next()) {
-           User userFromDao = new User.UserBuilder()
-                   .buildId(rs.getInt(SQL_COLUMN_ID))
-                   .buildName(rs.getString(SQL_COLUMN_NAME))
-                   .buildSurname(rs.getString(SQL_COLUMN_SURNAME))
-                   .finishBuilding();
-           resultList.add(userFromDao);
+        while (rs.next()) {
+            User userFromDao = new User.UserBuilder()
+                    .buildId(rs.getInt(SQL_COLUMN_ID))
+                    .buildName(rs.getString(SQL_COLUMN_NAME))
+                    .buildSurname(rs.getString(SQL_COLUMN_SURNAME))
+                    .finishBuilding();
+            resultList.add(userFromDao);
         }
         return resultList;
     }

@@ -12,8 +12,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class GiftCertificateDTOToCertificateEntityConverterTest {
 
-    private GiftCertificateDTOToCertificateEntityConverter converter =
-            new GiftCertificateDTOToCertificateEntityConverter();
+    private GiftCertificateDTOToEntityConverter converter =
+            new GiftCertificateDTOToEntityConverter();
 
     private GiftCertificateDTO[] paramsToCheck = {
             new GiftCertificateDTO(1, "name", "descr", 100,

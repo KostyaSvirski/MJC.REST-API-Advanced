@@ -1,7 +1,7 @@
 package com.epam.esm.service.impl;
 
 import com.epam.esm.GiftCertificateDao;
-import com.epam.esm.converter.GiftCertificateDTOToCertificateEntityConverter;
+import com.epam.esm.converter.GiftCertificateDTOToEntityConverter;
 import com.epam.esm.converter.GiftCertificateEntityToDTOConverter;
 import com.epam.esm.dto.GiftCertificateDTO;
 import com.epam.esm.entity.GiftCertificate;
@@ -27,14 +27,16 @@ import java.util.stream.Collectors;
 @Service
 public class GiftCertificateServiceImpl implements GiftCertificateService {
 
-    @Autowired
     private GiftCertificateEntityToDTOConverter converterToDto;
-    @Autowired
-    private GiftCertificateDTOToCertificateEntityConverter converterToEntity;
+    private GiftCertificateDTOToEntityConverter converterToEntity;
     private GiftCertificateDao dao;
 
     @Autowired
-    public GiftCertificateServiceImpl(GiftCertificateDao dao) {
+    public GiftCertificateServiceImpl(GiftCertificateEntityToDTOConverter converterToDto,
+                                      GiftCertificateDTOToEntityConverter converterToEntity,
+                                      GiftCertificateDao dao) {
+        this.converterToDto = converterToDto;
+        this.converterToEntity = converterToEntity;
         this.dao = dao;
     }
 
@@ -52,9 +54,9 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Override
-    public Optional<GiftCertificateDTO> find(long id, int limit, int page) throws ServiceException {
+    public Optional<GiftCertificateDTO> find(long id) throws ServiceException {
         try {
-            List<GiftCertificate> listFromDao = dao.find(id, limit, page);
+            List<GiftCertificate> listFromDao = dao.find(id);
             List<GiftCertificateDTO> resultList = createResultList(listFromDao);
             if (resultList.isEmpty()) {
                 return Optional.empty();
@@ -96,6 +98,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
             GiftCertificate certificateForUpdate = converterToEntity.apply((certificate));
             try {
                 dao.update(certificateForUpdate, id);
+                return true;
             } catch (DaoException e) {
                 throw new ServiceException("exception in dao", e.getCause());
             }

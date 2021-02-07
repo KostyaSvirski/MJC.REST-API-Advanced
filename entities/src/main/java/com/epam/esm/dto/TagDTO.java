@@ -17,6 +17,9 @@ public class TagDTO extends RepresentationModel<TagDTO> {
     public TagDTO() {
     }
 
+    public TagDTO(long id) {
+    }
+
     public String getName() {
         return name;
     }

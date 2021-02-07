@@ -1,10 +1,10 @@
 package com.epam.esm.impl;
 
 import com.epam.esm.TagDao;
+import com.epam.esm.entity.Tag;
 import com.epam.esm.exception.DBCPDataSourceException;
 import com.epam.esm.exception.DaoException;
 import com.epam.esm.pool.DBCPDataSource;
-import com.epam.esm.entity.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -99,16 +99,16 @@ public class TagDaoImpl implements TagDao {
     }
 
     @Override
-    public List<Tag> find(long id, int limit, int page) throws DaoException {
+    public List<Tag> find(long id) throws DaoException {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
             try {
                 PreparedStatement ps = connection.prepareStatement
                         (SQL_FIND_SPECIFIC_TAGS + SQL_SUFFIX_FOR_PAGINATION);
-                ps.setInt(1, (int)id);
-                ps.setInt(2, limit);
-                ps.setInt(3, (page - 1) * limit);
+                ps.setInt(1, (int) id);
+                ps.setInt(2, 1);
+                ps.setInt(3, 0);
                 ResultSet rs = ps.executeQuery();
                 List<Tag> listOfEntities = createListOfEntities(rs);
                 return listOfEntities;

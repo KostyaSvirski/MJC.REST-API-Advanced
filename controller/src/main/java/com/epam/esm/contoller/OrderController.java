@@ -60,7 +60,7 @@ public class OrderController {
     @GetMapping("/{id}")
     public ResponseEntity<?> retrieveSpecificOrder(@PathVariable long id) {
         try {
-            Optional<OrderDTO> order = service.find(id, 1, 1);
+            Optional<OrderDTO> order = service.find(id);
             if (order.isPresent()) {
                 OrderDTO dto = order.get();
                 dto.add(WebMvcLinkBuilder

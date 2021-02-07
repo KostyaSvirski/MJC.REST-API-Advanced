@@ -16,6 +16,9 @@ public class Tag {
         this.name = name;
     }
 
+    public Tag(long id) {
+    }
+
     public long getId() {
         return id;
     }

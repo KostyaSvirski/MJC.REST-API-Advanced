@@ -26,7 +26,7 @@ public class FieldValidatorLink extends IntermediateSortLink {
     }
 
     private enum TypesOfFields {
-        NAME("gift_certificate.name"),
+        NAME("name_of_certificate"),
         CREATE_DATE("create_date");
 
         private String simpleName;

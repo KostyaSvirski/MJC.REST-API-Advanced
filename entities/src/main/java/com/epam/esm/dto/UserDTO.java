@@ -12,7 +12,12 @@ public class UserDTO extends RepresentationModel<UserDTO> {
     private String name;
     private String surname;
 
-    public UserDTO() {}
+    public UserDTO() {
+    }
+
+    public UserDTO(long id) {
+        this.id = id;
+    }
 
     public long getId() {
         return id;

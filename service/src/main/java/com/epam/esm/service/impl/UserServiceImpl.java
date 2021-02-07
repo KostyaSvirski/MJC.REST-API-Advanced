@@ -21,20 +21,26 @@ import java.util.stream.Collectors;
 @Service
 public class UserServiceImpl implements UserService {
 
+    private final OrderDao daoOrder;
+    private final UserDao daoUser;
+    private final UserEntityToUserDTOConverter toUserDTOConverter;
+    private final OrderEntityToOrderDTOConverter toOrderDTOConverter;
+
     @Autowired
-    private OrderDao daoOrder;
-    @Autowired
-    private UserDao daoUser;
-    @Autowired
-    private UserEntityToUserDTOConverter toUserDTOConverter;
-    @Autowired
-    private OrderEntityToOrderDTOConverter toOrderDTOConverter;
+    public UserServiceImpl(OrderDao daoOrder, UserDao daoUser,
+                           UserEntityToUserDTOConverter toUserDTOConverter,
+                           OrderEntityToOrderDTOConverter toOrderDTOConverter) {
+        this.daoOrder = daoOrder;
+        this.daoUser = daoUser;
+        this.toUserDTOConverter = toUserDTOConverter;
+        this.toOrderDTOConverter = toOrderDTOConverter;
+    }
 
     @Override
     public List<UserDTO> findAll(int limit, int page) throws ServiceException {
         try {
             List<User> listFromDao = daoUser.findAll(limit, page);
-            return listFromDao.stream().map(entity -> toUserDTOConverter.apply(entity))
+            return listFromDao.stream().map(toUserDTOConverter)
                     .collect(Collectors.toList());
         } catch (DaoException e) {
             throw new ServiceException("exception in dao");
@@ -42,10 +48,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<UserDTO> find(long id, int limit, int page) throws ServiceException {
+    public Optional<UserDTO> find(long id) throws ServiceException {
         try {
-            List<User> listFromDao = daoUser.find(id, limit, page);
-            return listFromDao.stream().map(entity -> toUserDTOConverter.apply(entity))
+            List<User> listFromDao = daoUser.find(id);
+            return listFromDao.stream().map(toUserDTOConverter)
                     .findFirst();
         } catch (DaoException e) {
             throw new ServiceException("exception in dao");
@@ -53,10 +59,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<OrderDTO> findUsersOrders(long idUser, int limit, int page) throws ServiceException {
+    public List<OrderDTO> findOrdersOfUser(long idUser, int limit, int page) throws ServiceException {
         try {
             List<Order> listFromDao = daoOrder.findOrdersOfSpecificUser(idUser, limit, page);
-            return listFromDao.stream().map(entity -> toOrderDTOConverter.apply(entity))
+            return listFromDao.stream().map(toOrderDTOConverter)
                     .collect(Collectors.toList());
         } catch (DaoException e) {
             throw new ServiceException("exception in dao");
@@ -64,11 +70,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<OrderDTO> findSpecificOrderOfUser(long idUser, long idOrder, int limit, int page)
+    public Optional<OrderDTO> findSpecificOrderOfUser(long idUser, long idOrder)
             throws ServiceException {
         try {
-            List<Order> listFromDao = daoOrder.findOrderOfSpecificUser(idUser, idOrder, limit, page);
-            return listFromDao.stream().map(entity -> toOrderDTOConverter.apply(entity))
+            List<Order> listFromDao = daoOrder.findOrderOfSpecificUser(idUser, idOrder);
+            return listFromDao.stream().map(toOrderDTOConverter)
                     .findFirst();
         } catch (DaoException e) {
             throw new ServiceException("exception in dao");

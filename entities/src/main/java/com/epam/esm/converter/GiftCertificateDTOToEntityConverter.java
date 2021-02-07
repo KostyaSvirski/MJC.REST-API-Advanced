@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import java.util.function.Function;
 
 @Component
-public class GiftCertificateDTOToCertificateEntityConverter implements Function<GiftCertificateDTO, GiftCertificate> {
+public class GiftCertificateDTOToEntityConverter implements Function<GiftCertificateDTO, GiftCertificate> {
 
     @Override
     public GiftCertificate apply(GiftCertificateDTO certificateDTO) {

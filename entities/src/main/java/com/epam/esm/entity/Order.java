@@ -11,6 +11,13 @@ public class Order {
     private long cost;
     private boolean isClosed;
 
+    public Order(long id) {
+        this.id = id;
+    }
+
+    public Order() {
+    }
+
     public boolean isClosed() {
         return isClosed;
     }
@@ -82,7 +89,7 @@ public class Order {
             return this;
         }
 
-        public OrderBuilder buildPurchaseTime(Instant purchaseTime){
+        public OrderBuilder buildPurchaseTime(Instant purchaseTime) {
             newOrder.purchaseTime = purchaseTime;
             return this;
         }

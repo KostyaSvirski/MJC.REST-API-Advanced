@@ -88,13 +88,13 @@ public class OrderDaoImpl implements OrderDao {
     }
 
     @Override
-    public List<Order> find(long id, int limit, int page) throws DaoException {
+    public List<Order> find(long id) throws DaoException {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
             String specificRequest = createSpecificRequest(SQL_SUFFIX_FOR_FIND_SPECIFIC_ORDER);
             try {
-                return getOrders((int) id, limit, page, connection, specificRequest);
+                return getOrders((int) id, 1, 1, connection, specificRequest);
             } catch (SQLException throwables) {
                 throw new DaoException("error occurs while executing request", throwables);
             } finally {
@@ -146,7 +146,7 @@ public class OrderDaoImpl implements OrderDao {
     }
 
     @Override
-    public List<Order> findOrderOfSpecificUser(long idUser, long idOrder, int limit, int page) throws DaoException {
+    public List<Order> findOrderOfSpecificUser(long idUser, long idOrder) throws DaoException {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
@@ -155,8 +155,8 @@ public class OrderDaoImpl implements OrderDao {
                 PreparedStatement ps = connection.prepareStatement(specificRequest);
                 ps.setInt(1, (int) idOrder);
                 ps.setInt(2, (int) idUser);
-                ps.setInt(3, limit);
-                ps.setInt(4, limit * (page - 1));
+                ps.setInt(3, 1);
+                ps.setInt(4, 0);
                 ResultSet rs = ps.executeQuery();
                 return createResultList(rs);
             } catch (SQLException throwables) {

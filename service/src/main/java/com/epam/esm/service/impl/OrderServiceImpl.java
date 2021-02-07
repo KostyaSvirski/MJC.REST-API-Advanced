@@ -22,18 +22,23 @@ import java.util.stream.Collectors;
 @Service
 public class OrderServiceImpl implements OrderService {
 
+    private final OrderDao dao;
+    private final OrderEntityToOrderDTOConverter toOrderDTOConverter;
+    private final OrderDTOToOrderEntityConverter toOrderEntityConverter;
+
     @Autowired
-    private OrderDao dao;
-    @Autowired
-    private OrderEntityToOrderDTOConverter toOrderDTOConverter;
-    @Autowired
-    private OrderDTOToOrderEntityConverter toOrderEntityConverter;
+    public OrderServiceImpl(OrderDao dao, OrderEntityToOrderDTOConverter toOrderDTOConverter,
+                            OrderDTOToOrderEntityConverter toOrderEntityConverter) {
+        this.dao = dao;
+        this.toOrderDTOConverter = toOrderDTOConverter;
+        this.toOrderEntityConverter = toOrderEntityConverter;
+    }
 
     @Override
     public List<OrderDTO> findAll(int limit, int page) throws ServiceException {
         try {
             List<Order> listFromDao = dao.findAll(limit, page);
-            return listFromDao.stream().map(entity -> toOrderDTOConverter.apply(entity))
+            return listFromDao.stream().map(toOrderDTOConverter)
                     .collect(Collectors.toList());
         } catch (DaoException e) {
             throw new ServiceException("exception in dao");
@@ -41,10 +46,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Optional<OrderDTO> find(long id, int limit, int page) throws ServiceException {
+    public Optional<OrderDTO> find(long id) throws ServiceException {
         try {
-            List<Order> listFromDao = dao.find(id, limit, page);
-            return listFromDao.stream().map(entity -> toOrderDTOConverter.apply(entity))
+            List<Order> listFromDao = dao.find(id);
+            return listFromDao.stream().map(toOrderDTOConverter)
                     .findFirst();
         } catch (DaoException e) {
             throw new ServiceException("exception in dao");
@@ -56,10 +61,9 @@ public class OrderServiceImpl implements OrderService {
     public int create(OrderDTO newOrder) throws ServiceException {
         PreparedValidatorChain<OrderDTO> chain = new IntermediateOrderLink();
         chain.linkWith(new IdCertificateValidatorLink()).linkWith(new IdUserValidatorLink());
-        if(chain.validate(newOrder)) {
+        if (chain.validate(newOrder)) {
             try {
-                int idOfNewOrder = dao.create(toOrderEntityConverter.apply(newOrder));
-                return idOfNewOrder;
+                return dao.create(toOrderEntityConverter.apply(newOrder));
             } catch (DaoException e) {
                 throw new ServiceException("exception in dao");
             }
