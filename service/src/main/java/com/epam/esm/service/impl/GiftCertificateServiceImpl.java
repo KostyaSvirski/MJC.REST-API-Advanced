@@ -1,8 +1,8 @@
 package com.epam.esm.service.impl;
 
 import com.epam.esm.GiftCertificateDao;
-import com.epam.esm.converter.GiftCertificateDTOToCertificateEntityConverter;
-import com.epam.esm.converter.GiftCertificateToDTOConverter;
+import com.epam.esm.converter.GiftCertificateDTOToEntityConverter;
+import com.epam.esm.converter.GiftCertificateEntityToDTOConverter;
 import com.epam.esm.dto.GiftCertificateDTO;
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.exception.DaoException;
@@ -27,14 +27,16 @@ import java.util.stream.Collectors;
 @Service
 public class GiftCertificateServiceImpl implements GiftCertificateService {
 
-    @Autowired
-    private GiftCertificateToDTOConverter converterToDto;
-    @Autowired
-    private GiftCertificateDTOToCertificateEntityConverter converterToEntity;
-    @Autowired
+    private GiftCertificateEntityToDTOConverter converterToDto;
+    private GiftCertificateDTOToEntityConverter converterToEntity;
     private GiftCertificateDao dao;
 
-    public GiftCertificateServiceImpl(GiftCertificateDao dao) {
+    @Autowired
+    public GiftCertificateServiceImpl(GiftCertificateEntityToDTOConverter converterToDto,
+                                      GiftCertificateDTOToEntityConverter converterToEntity,
+                                      GiftCertificateDao dao) {
+        this.converterToDto = converterToDto;
+        this.converterToEntity = converterToEntity;
         this.dao = dao;
     }
 
@@ -42,9 +44,9 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Override
-    public List<GiftCertificateDTO> findAll() throws ServiceException {
+    public List<GiftCertificateDTO> findAll(int limit, int page) throws ServiceException {
         try {
-            List<GiftCertificate> listFromDao = dao.findAll();
+            List<GiftCertificate> listFromDao = dao.findAll(limit, page);
             return createResultList(listFromDao);
         } catch (DaoException e) {
             throw new ServiceException("exception in dao", e.getCause());
@@ -88,15 +90,15 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     @Override
     public boolean update(GiftCertificateDTO certificate, long id) throws ServiceException {
-        PreparedValidatorChain<GiftCertificateDTO> chain = new TagsValidatorLink();
-        chain.linkWith(new CertificateNameValidatorLink())
-                .linkWith(new DescriptionValidatorLink())
+        PreparedValidatorChain<GiftCertificateDTO> chain = new CertificateNameValidatorLink();
+        chain.linkWith(new DescriptionValidatorLink())
                 .linkWith(new DurationValidatorLink())
                 .linkWith(new PriceValidatorLink());
-        if(chain.validate(certificate)) {
+        if (chain.validate(certificate)) {
             GiftCertificate certificateForUpdate = converterToEntity.apply((certificate));
             try {
                 dao.update(certificateForUpdate, id);
+                return true;
             } catch (DaoException e) {
                 throw new ServiceException("exception in dao", e.getCause());
             }
@@ -114,9 +116,9 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Override
-    public List<GiftCertificateDTO> findByPartOfName(String partOfName) throws ServiceException {
+    public List<GiftCertificateDTO> findByPartOfName(String partOfName, int limit, int page) throws ServiceException {
         try {
-            List<GiftCertificate> listFromDao = dao.searchByName(partOfName);
+            List<GiftCertificate> listFromDao = dao.searchByName(partOfName, limit, page);
             return createResultList(listFromDao);
         } catch (DaoException e) {
             throw new ServiceException("exception in dao", e.getCause());
@@ -124,9 +126,10 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Override
-    public List<GiftCertificateDTO> findByPartOfDescription(String partOfDescription) throws ServiceException {
+    public List<GiftCertificateDTO> findByPartOfDescription(String partOfDescription, int limit, int page)
+            throws ServiceException {
         try {
-            List<GiftCertificate> listFromDao = dao.searchByDescription(partOfDescription);
+            List<GiftCertificate> listFromDao = dao.searchByDescription(partOfDescription, limit, page);
             return createResultList(listFromDao);
         } catch (DaoException e) {
             throw new ServiceException("exception in dao", e.getCause());
@@ -134,9 +137,9 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Override
-    public List<GiftCertificateDTO> findByTag(String nameOfTag) throws ServiceException {
+    public List<GiftCertificateDTO> findByTag(String nameOfTag, int limit, int page) throws ServiceException {
         try {
-            List<GiftCertificate> listFromDao = dao.searchByTag(nameOfTag);
+            List<GiftCertificate> listFromDao = dao.searchByTag(nameOfTag, limit, page);
             return createResultList(listFromDao);
         } catch (DaoException e) {
             throw new ServiceException("exception in dao", e.getCause());
@@ -144,15 +147,16 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Override
-    public List<GiftCertificateDTO> sortByField(String field, String method) throws ServiceException {
+    public List<GiftCertificateDTO> sortByField(String field, String method, int limit, int page)
+            throws ServiceException {
         try {
             Map<String, String> tempMapForValidateParams = new HashMap<>();
             tempMapForValidateParams.put("method", method);
             tempMapForValidateParams.put("field", field);
             PreparedValidatorChain<Map<String, String>> chain = new IntermediateSortLink();
             chain.linkWith(new FieldValidatorLink()).linkWith(new MethodValidatorLink());
-            if(chain.validate(tempMapForValidateParams)) {
-                List<GiftCertificate> listFromDao = dao.sortCertificates(field, method);
+            if (chain.validate(tempMapForValidateParams)) {
+                List<GiftCertificate> listFromDao = dao.sortCertificates(field, method, limit, page);
                 return createResultList(listFromDao);
             }
             return new ArrayList<>();
