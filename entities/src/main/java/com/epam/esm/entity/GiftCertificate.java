@@ -1,11 +1,9 @@
 package com.epam.esm.entity;
 
 import com.epam.esm.converter.TagDTOToTagEntityConverter;
-import com.epam.esm.dto.GiftCertificateDTO;
 import com.epam.esm.dto.TagDTO;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
