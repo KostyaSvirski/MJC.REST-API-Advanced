@@ -20,10 +20,10 @@ class CertificateDaoImplTest {
     @Autowired
     private GiftCertificateDao dao;
 
-    @ParameterizedTest
+    /*@ParameterizedTest
     @ValueSource(longs = {1, 2, 3, 5, 6, 9})
     public void testFindSpecific(long id) throws DaoException {
         assertEquals(id, dao.find(id, 1, 1).get(0).getId());
     }
-
+*/
 }

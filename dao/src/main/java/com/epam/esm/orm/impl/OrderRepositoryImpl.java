@@ -80,7 +80,7 @@ public class OrderRepositoryImpl implements OrderRepository {
         Transaction transaction = null;
         try (Session session = factory.openSession()) {
             transaction = session.beginTransaction();
-            Integer idOfNewOrder = (Integer) session.save(newOrder);
+            Integer idOfNewOrder = Integer.parseInt(Long.toString((Long) session.save(newOrder)));
             transaction.commit();
             return idOfNewOrder;
         } catch (Throwable e) {
