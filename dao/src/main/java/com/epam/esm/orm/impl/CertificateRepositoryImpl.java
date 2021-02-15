@@ -3,112 +3,158 @@ package com.epam.esm.orm.impl;
 import com.epam.esm.exception.DaoException;
 import com.epam.esm.orm.CertificateRepository;
 import com.epam.esm.persistence.HibernateGiftCertificateEntity;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
+import com.epam.esm.persistence.HibernateTagEntity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Query;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class CertificateRepositoryImpl implements CertificateRepository {
 
-    private static final String HQL_RETRIEVE_ALL = "from HibernateGiftCertificateEntity cert";
-    private static final String HQL_ORDER_BY_ID = "order by cert.id";
-    private static final String HQL_ORDER_BY_NAME = "order by cert.name";
-    private static final String HQL_ORDER_BY_CREATE_DATE = "order by cert.create_date";
-    private static final String HQL_CONDITION_DESCRIPTION = "where cert.description =: description";
-    private static final String HQL_CONDITION_NAME = "where cert.name =: name";
-    private static final String HQL_CONDITION_TAG = "where cert.name =: name";
+    private static final String HQL_RETRIEVE_ALL = "from HibernateGiftCertificateEntity cert ";
+    private static final String HQL_ORDER_BY_ID = "order by cert.id ";
+    private static final String HQL_ORDER_BY_NAME = "order by cert.name ";
+    private static final String HQL_ORDER_BY_CREATE_DATE = "order by cert.create_date ";
+    private static final String HQL_CONDITION_DESCRIPTION = "where cert.description =: description ";
+    private static final String HQL_CONDITION_NAME = "where cert.name =: name ";
 
+    @Qualifier("test")
     @Autowired
-    private SessionFactory factory;
+    private EntityManagerFactory factory;
 
     @Override
     public List<HibernateGiftCertificateEntity> find(long id) throws DaoException {
-        Transaction transaction = null;
-        try (Session session = factory.openSession()) {
-            transaction = session.beginTransaction();
-            HibernateGiftCertificateEntity cert = session.get(HibernateGiftCertificateEntity.class, id);
-            transaction.commit();
+        EntityManager em = null;
+        try {
+            em = factory.createEntityManager();
+            HibernateGiftCertificateEntity cert = em.find(HibernateGiftCertificateEntity.class, id);
+            /*em.detach(cert);*/
             return Collections.singletonList(cert);
         } catch (Throwable e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
             throw new DaoException(e.getMessage());
+        } finally {
+            if (em != null) {
+                em.close();
+            }
         }
     }
 
     @Override
     public List<HibernateGiftCertificateEntity> findAll(int limit, int page) throws DaoException {
-        Transaction transaction = null;
-        try (Session session = factory.openSession()) {
-            transaction = session.beginTransaction();
-            List certs = session.createQuery(HQL_RETRIEVE_ALL + HQL_ORDER_BY_ID)
-                    .setFirstResult(limit * (page - 1))
+        EntityManager em = null;
+        try {
+            em = factory.createEntityManager();
+            return em.createQuery(HQL_RETRIEVE_ALL + HQL_ORDER_BY_ID)
+                    .setFirstResult((page - 1) * limit)
                     .setMaxResults(limit)
                     .getResultList();
-            transaction.commit();
-            return certs;
         } catch (Throwable e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
             throw new DaoException(e.getMessage());
+        } finally {
+            if (em != null) {
+                em.close();
+            }
         }
     }
 
     @Override
     public int create(HibernateGiftCertificateEntity entity) throws DaoException {
-        Transaction transaction = null;
-        try (Session session = factory.openSession()) {
-            transaction = session.beginTransaction();
-            Integer idOfNewCert = (Integer) session.save(entity);
-            transaction.commit();
-            return idOfNewCert;
+        EntityManager em = null;
+        try {
+            em = factory.createEntityManager();
+            em.getTransaction().begin();
+            em.persist(entity);
+            int idNewCert = (int) entity.getId();
+            em.getTransaction().commit();
+            return idNewCert;
         } catch (Throwable e) {
-            if (transaction != null) {
-                transaction.rollback();
+            if (em != null) {
+                em.getTransaction().rollback();
             }
             throw new DaoException(e.getMessage());
+        } finally {
+            if (em != null) {
+                em.close();
+            }
         }
     }
 
     @Override
     public void delete(long id) throws DaoException {
-        Transaction transaction = null;
-        try (Session session = factory.openSession()) {
-            transaction = session.beginTransaction();
-            HibernateGiftCertificateEntity certToDelete = session
-                    .get(HibernateGiftCertificateEntity.class, id);
-            session.delete(certToDelete);
-            transaction.commit();
+        EntityManager em = null;
+        try {
+            em = factory.createEntityManager();
+            em.getTransaction().begin();
+            HibernateGiftCertificateEntity certToDelete = em.find(HibernateGiftCertificateEntity.class, id);
+            em.remove(certToDelete);
         } catch (Throwable e) {
-            if (transaction != null) {
-                transaction.rollback();
+            if (em != null) {
+                em.getTransaction().rollback();
             }
             throw new DaoException(e.getMessage());
+        } finally {
+            if (em != null) {
+                em.close();
+            }
         }
     }
 
     @Override
-    public void update(HibernateGiftCertificateEntity certificateForUpdate, long id) throws DaoException {
-        Transaction transaction = null;
-        try (Session session = factory.openSession()) {
-            transaction = session.beginTransaction();
-            certificateForUpdate.setId(id);
-            session.update(certificateForUpdate);
-            transaction.commit();
+    public void update(HibernateGiftCertificateEntity certificateExampleForUpdate, long id) throws DaoException {
+        EntityManager em = null;
+        try {
+            em = factory.createEntityManager();
+            Optional<HibernateGiftCertificateEntity> certWrapper = find(id).stream().findAny();
+            if (certWrapper.isPresent()) {
+                HibernateGiftCertificateEntity cert = certWrapper.get();
+                cert = insertDataForUpdate(certificateExampleForUpdate, cert);
+                em.getTransaction().begin();
+                em.merge(cert);
+                em.getTransaction().commit();
+            }
         } catch (Throwable e) {
-            if (transaction != null) {
-                transaction.rollback();
+            if (em != null) {
+                em.getTransaction().rollback();
             }
             throw new DaoException(e.getMessage());
+        } finally {
+            if (em != null) {
+                em.close();
+            }
         }
+    }
+
+    private HibernateGiftCertificateEntity insertDataForUpdate
+            (HibernateGiftCertificateEntity example, HibernateGiftCertificateEntity cert) {
+        if (example.getName() != null) {
+            cert.setName(example.getName());
+        }
+        if (example.getDescription() != null) {
+            cert.setDescription(example.getDescription());
+        }
+        if (example.getLastUpdateDate() != null) {
+            cert.setLastUpdateDate(example.getLastUpdateDate());
+        }
+        if (example.getCreateDate() != null) {
+            cert.setCreateDate(example.getCreateDate());
+        }
+        if (example.getDuration() != 0) {
+            cert.setDuration(example.getDuration());
+        }
+        if (example.getPrice() != 0) {
+            cert.setPrice(example.getPrice());
+        }
+        if (example.getTagsDependsOnCertificate() != null) {
+            cert.setTagsDependsOnCertificate(example.getTagsDependsOnCertificate());
+        }
+        return cert;
     }
 
     @Override
@@ -126,21 +172,20 @@ public class CertificateRepositoryImpl implements CertificateRepository {
     }
 
     private List<HibernateGiftCertificateEntity> getSortedCertificates
-            (String method, int limit, int page, String hqlOrderByName) throws DaoException {
-        Transaction transaction = null;
-        try (Session session = factory.openSession()) {
-            transaction = session.beginTransaction();
-            List certs = session.createQuery(HQL_RETRIEVE_ALL + hqlOrderByName + method)
-                    .setMaxResults(limit)
+            (String method, int limit, int page, String hqlOrderBy) throws DaoException {
+        EntityManager em = null;
+        try {
+            em = factory.createEntityManager();
+            return em.createQuery(HQL_RETRIEVE_ALL + hqlOrderBy + method)
                     .setFirstResult(limit * (page - 1))
+                    .setMaxResults(limit)
                     .getResultList();
-            transaction.commit();
-            return certs;
         } catch (Throwable e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
             throw new DaoException(e.getMessage());
+        } finally {
+            if (em != null) {
+                em.close();
+            }
         }
     }
 
@@ -157,21 +202,21 @@ public class CertificateRepositoryImpl implements CertificateRepository {
     }
 
     private List<HibernateGiftCertificateEntity> searchCerts
-            (int limit, int page, String hqlConditionDescription, String param) throws DaoException {
-        Transaction transaction = null;
-        try (Session session = factory.openSession()) {
-            transaction = session.beginTransaction();
-            Query query = session.createQuery
-                    (HQL_RETRIEVE_ALL + hqlConditionDescription + HQL_ORDER_BY_ID);
+            (int limit, int page, String hqlCondition, String param) throws DaoException {
+        EntityManager em = null;
+        try {
+            em = factory.createEntityManager();
+            Query query = em.createQuery(HQL_RETRIEVE_ALL + hqlCondition);
             query.setParameter(1, param);
-            List certs = query.setFirstResult((page - 1) * limit).setMaxResults(limit).getResultList();
-            transaction.commit();
-            return certs;
+            return query.setFirstResult(limit * (page - 1))
+                    .setMaxResults(limit)
+                    .getResultList();
         } catch (Throwable e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
             throw new DaoException(e.getMessage());
+        } finally {
+            if (em != null) {
+                em.close();
+            }
         }
     }
 
@@ -179,17 +224,6 @@ public class CertificateRepositoryImpl implements CertificateRepository {
     @Override
     public List<HibernateGiftCertificateEntity> searchByTag(String nameOfTag, int limit, int page)
             throws DaoException {
-        Transaction transaction = null;
-        try (Session session = factory.openSession()) {
-            transaction = session.beginTransaction();
-/*            List certs = session.createQuery("");*/
-            transaction.commit();
-            return null;
-        } catch (Throwable e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw new DaoException(e.getMessage());
-        }
+        return null;
     }
 }

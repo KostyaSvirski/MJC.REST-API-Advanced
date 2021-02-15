@@ -1,6 +1,6 @@
 package com.epam.esm.orm.impl;
 
-import com.epam.esm.ConfigTestDB;
+import com.epam.esm.config.ConfigDB;
 import com.epam.esm.exception.DaoException;
 import com.epam.esm.orm.OrderRepository;
 import com.epam.esm.persistence.HibernateOrderEntity;
@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(
-        classes = {ConfigTestDB.class},
+        classes = {ConfigDB.class},
         loader = AnnotationConfigContextLoader.class)
 class OrderRepositoryImplTest {
 
@@ -45,7 +45,7 @@ class OrderRepositoryImplTest {
         order.setCost(100);
         order.setClosed(false);
         int result = repository.create(order);
-        assertNotNull(result);
+        assertEquals(101, result);
     }
 
     @Test
@@ -56,17 +56,17 @@ class OrderRepositoryImplTest {
         order.setCost(100);
         order.setClosed(false);
         int result = repository.create(order);
-        assertNotNull(result);
         List<HibernateOrderEntity> entities = repository.find(result);
         assertNotNull(entities);
         assertNotNull(entities.get(0));
+        assertEquals(result, entities.get(0).getId());
     }
 
     @Test
     public void findNotExistOrder() throws DaoException {
-        List<HibernateOrderEntity> entities = repository.find(100);
+        List<HibernateOrderEntity> entities = repository.find(101);
         assertNotNull(entities);
-        assertTrue(entities.get(0) == null);
+        assertNull(entities.get(0));
     }
 
     @Test
@@ -75,10 +75,38 @@ class OrderRepositoryImplTest {
         assertNotNull(entities);
         assertEquals(10, entities.size());
         assertEquals(21, entities.get(0).getId());
-        assertEquals(30, entities.get(entities.size()-1).getId());
+        assertEquals(30, entities.get(entities.size() - 1).getId());
     }
 
+    @Test
+    public void findOrdersOfSpecificUser() throws DaoException {
+        int expectedIdUser = 3;
+        HibernateOrderEntity order = new HibernateOrderEntity();
+        order.setIdUser(expectedIdUser);
+        order.setIdCertificate((long) (Math.random() * 10 + 1));
+        order.setCost((long) (Math.random() * 50 + 50));
+        order.setClosed(false);
+        repository.create(order);
+        List<HibernateOrderEntity> orders = repository.findOrdersOfSpecificUser(expectedIdUser, 10, 1);
+        assertNotNull(orders);
+        assertNotNull(orders.get(0));
+        assertTrue(orders.stream().allMatch(entity -> entity.getIdUser() == expectedIdUser));
+    }
 
-
-
+    @Test
+    public void findOrderOfSpecificUser() throws DaoException {
+        int expectedIdUser = 3;
+        HibernateOrderEntity order = new HibernateOrderEntity();
+        order.setIdUser(expectedIdUser);
+        order.setIdCertificate((long) (Math.random() * 10 + 1));
+        order.setCost((long) (Math.random() * 50 + 50));
+        order.setClosed(false);
+        int idNewOrder = repository.create(order);
+        List<HibernateOrderEntity> orders = repository.findOrderOfSpecificUser(expectedIdUser, idNewOrder);
+        assertNotNull(orders);
+        assertNotNull(orders.get(0));
+        assertEquals(1, orders.size());
+        assertEquals(idNewOrder, orders.get(0).getId());
+        assertEquals(expectedIdUser, orders.get(0).getIdUser());
+    }
 }

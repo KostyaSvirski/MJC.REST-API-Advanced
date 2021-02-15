@@ -8,16 +8,20 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.service.ServiceRegistry;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+
 @Configuration
 @PropertySource("classpath:/database.properties")
 @ComponentScan("com.epam.esm")
-public class ConfigDB {
+public class    ConfigDB {
 
     @Value("${hibernate.connection.driver_class}")
     private String driverClassName;
@@ -39,12 +43,6 @@ public class ConfigDB {
     private String serverTimeZone;
     @Value("${hibernate.connection.useUnicode}")
     private String useUnicode;
-    @Value("${hibernate.dialect}")
-    private String dialect;
-    @Value("${hibernate.show_sql}")
-    private String showSql;
-    @Value("${hibernate.current_session_context_class}")
-    private String sessionContextClass;
 
     @Bean
     public BasicDataSource dataSource() {
@@ -62,24 +60,17 @@ public class ConfigDB {
         return dataSource;
     }
 
+    @Qualifier("product")
     @Bean
-    public SessionFactory session() {
-        org.hibernate.cfg.Configuration configuration = new org.hibernate.cfg.Configuration();
-        configuration.setProperty("hibernate.connection.url", url);
-        configuration.setProperty("hibernate.connection.driver_class", driverClassName);
-        configuration.setProperty("hibernate.connection.username", userName);
-        configuration.setProperty("hibernate.connection.password", pass);
-        configuration.setProperty("hibernate.connection.pool_size", initialSize);
-        configuration.setProperty("hibernate.connection.characterEncoding", characterEncoding);
-        configuration.setProperty("hibernate.dialect", dialect);
-        configuration.setProperty("hibernate.show_sql", showSql);
-        configuration.setProperty("hibernate.current_session_context_class", sessionContextClass);
-        configuration.addAnnotatedClass(HibernateGiftCertificateEntity.class)
-                .addAnnotatedClass(HibernateOrderEntity.class)
-                .addAnnotatedClass(HibernateTagEntity.class)
-                .addAnnotatedClass(HibernateUserEntity.class);
-        ServiceRegistry service = new StandardServiceRegistryBuilder()
-                .applySettings(configuration.getProperties()).build();
-        return configuration.buildSessionFactory(service);
+    public EntityManagerFactory entityManagerFactory() {
+        return Persistence
+                .createEntityManagerFactory("gift-certificates-api");
+    }
+
+    @Qualifier("test")
+    @Bean
+    public EntityManagerFactory entityManagerFactoryTest() {
+        return Persistence
+                .createEntityManagerFactory("gift-certificates-test");
     }
 }

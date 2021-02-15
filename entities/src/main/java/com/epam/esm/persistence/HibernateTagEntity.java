@@ -6,16 +6,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
-@EqualsAndHashCode
+@EqualsAndHashCode(exclude = {"certificateEntitySet"})
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -32,8 +27,30 @@ public class HibernateTagEntity {
     @Getter
     @Setter
     private String name;
-    @ManyToMany(mappedBy = "tagsDependsOnCertificate")
+    @ManyToMany(fetch = FetchType.EAGER,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "tagsDependsOnCertificate")
     @Getter
     @Setter
-    private Set<HibernateGiftCertificateEntity> certificateEntitySet;
+    private Set<HibernateGiftCertificateEntity> certificateEntitySet = new HashSet<>();
+
+    public void addCertificate(HibernateGiftCertificateEntity cert) {
+        if(!cert.getTagsDependsOnCertificate().contains(this)) {
+            cert.addTag(this);
+        }
+        certificateEntitySet.add(cert);
+    }
+
+    public void removeCertificate(HibernateGiftCertificateEntity cert) {
+        certificateEntitySet.remove(cert);
+        cert.getTagsDependsOnCertificate().remove(this);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("HibernateTagEntity{");
+        sb.append("id=").append(id);
+        sb.append(", name='").append(name).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

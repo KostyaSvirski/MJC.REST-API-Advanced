@@ -1,17 +1,14 @@
 package com.epam.esm.persistence;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.HashSet;
 import java.util.Set;
 
-@EqualsAndHashCode
+@EqualsAndHashCode(exclude = {"tagsDependsOnCertificate"})
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -36,7 +33,7 @@ public class HibernateGiftCertificateEntity {
     private long price;
     @Getter
     @Setter
-    private Date duration;
+    private int duration;
     @Column(name = "create_date")
     @Getter
     @Setter
@@ -45,7 +42,9 @@ public class HibernateGiftCertificateEntity {
     @Getter
     @Setter
     private Timestamp lastUpdateDate;
-    @ManyToMany(cascade = {CascadeType.ALL})
+    @ManyToMany(fetch = FetchType.EAGER,
+            cascade = {CascadeType.PERSIST,
+                    CascadeType.MERGE})
     @JoinTable(
             name = "junction_gift_certificates_and_tags",
             joinColumns = {@JoinColumn(name = "id_certificate")},
@@ -53,7 +52,31 @@ public class HibernateGiftCertificateEntity {
     )
     @Getter
     @Setter
-    private Set<HibernateTagEntity> tagsDependsOnCertificate;
+    private Set<HibernateTagEntity> tagsDependsOnCertificate = new HashSet<>();
 
+    public void addTag(HibernateTagEntity tag) {
+        tagsDependsOnCertificate.add(tag);
+        if (!tag.getCertificateEntitySet().contains(this)) {
+            tag.addCertificate(this);
+        }
+    }
 
+    public void removeTag(HibernateTagEntity tag) {
+        tagsDependsOnCertificate.remove(tag);
+        tag.getCertificateEntitySet().remove(this);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("HibernateGiftCertificateEntity{");
+        sb.append("id=").append(id);
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", description='").append(description).append('\'');
+        sb.append(", price=").append(price);
+        sb.append(", duration=").append(duration);
+        sb.append(", createDate=").append(createDate);
+        sb.append(", lastUpdateDate=").append(lastUpdateDate);
+        sb.append('}');
+        return sb.toString();
+    }
 }

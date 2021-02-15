@@ -3,114 +3,127 @@ package com.epam.esm.orm.impl;
 import com.epam.esm.exception.DaoException;
 import com.epam.esm.orm.OrderRepository;
 import com.epam.esm.persistence.HibernateOrderEntity;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Query;
 import java.util.Collections;
 import java.util.List;
 
 @Repository
 public class OrderRepositoryImpl implements OrderRepository {
 
+    private static final String HQL_FIND_ALL = "FROM HibernateOrderEntity ORDER BY id";
+    private static final String SUFFIX_FOR_ONE_ORDER = " and o.id =: idOrder";
+    private static final String HQL_FIND_LAST_ID = "select max(o.id) from HibernateOrderEntity o";
+    private static final String HQL_FIND_ORDERS_OF_USER = "from HibernateOrderEntity o" +
+            " where o.idUser =: idUser";
+
+    @Qualifier("test")
     @Autowired
-    private SessionFactory factory;
+    private EntityManagerFactory factory;
 
     @Override
     public List<HibernateOrderEntity> find(long id) throws DaoException {
-        Transaction transaction = null;
-        try (Session session = factory.openSession()) {
-            transaction = session.beginTransaction();
-            HibernateOrderEntity order = session.get(HibernateOrderEntity.class, id);
-            transaction.commit();
+        EntityManager em = null;
+        try {
+            em = factory.createEntityManager();
+            HibernateOrderEntity order = em.find(HibernateOrderEntity.class, id);
+            if(order != null) {
+                em.detach(order);
+            }
             return Collections.singletonList(order);
         } catch (Throwable e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
             throw new DaoException(e.getMessage());
+        } finally {
+            if (em != null) {
+                em.close();
+            }
         }
     }
 
     @Override
     public List<HibernateOrderEntity> findAll(int limit, int page) throws DaoException {
-        Transaction transaction = null;
-        try (Session session = factory.openSession()) {
-            transaction = session.beginTransaction();
-            List orders = session.createQuery("from HibernateOrderEntity ")
-                    .setFirstResult(limit * (page-1))
+        EntityManager em = null;
+        try {
+            em = factory.createEntityManager();
+            List orders = em.createQuery(HQL_FIND_ALL)
+                    .setFirstResult((page - 1) * limit)
                     .setMaxResults(limit)
                     .getResultList();
-            transaction.commit();
             return orders;
         } catch (Throwable e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
             throw new DaoException(e.getMessage());
+        } finally {
+            if (em != null) {
+                em.close();
+            }
         }
     }
 
     @Override
     public List<HibernateOrderEntity> findOrderOfSpecificUser(long idUser, long idOrder) throws DaoException {
-        Transaction transaction = null;
-        try (Session session = factory.openSession()) {
-            transaction = session.beginTransaction();
-            Query query = session
-                    .createQuery("from HibernateOrderEntity o" +
-                            " where o.idUser =: idUser and o.id =: idOrder");
-            query.setParameter(Math.toIntExact(idUser), idUser);
-            query.setParameter(Math.toIntExact(idOrder), idOrder);
+        EntityManager em = null;
+        try {
+            em = factory.createEntityManager();
+            Query query = em.createQuery(HQL_FIND_ORDERS_OF_USER + SUFFIX_FOR_ONE_ORDER);
+            query.setParameter("idUser", idUser);
+            query.setParameter("idOrder", idOrder);
             List orders = query.getResultList();
-            transaction.commit();
             return orders;
         } catch (Throwable e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
             throw new DaoException(e.getMessage());
+        } finally {
+            if (em != null) {
+                em.close();
+            }
         }
     }
 
     @Override
     public int create(HibernateOrderEntity newOrder) throws DaoException {
-        Transaction transaction = null;
-        try (Session session = factory.openSession()) {
-            transaction = session.beginTransaction();
-            Integer idOfNewOrder = Integer.parseInt(Long.toString((Long) session.save(newOrder)));
-            transaction.commit();
-            return idOfNewOrder;
+        EntityManager em = null;
+        try {
+            em = factory.createEntityManager();
+            em.getTransaction().begin();
+            em.persist(newOrder);
+            /*int idNewOrder = (int) em.createQuery(HQL_FIND_LAST_ID).getResultList().get(0);*/
+            int idNewOrder = (int) newOrder.getId();
+            em.getTransaction().commit();
+            return idNewOrder;
         } catch (Throwable e) {
-            if (transaction != null) {
-                transaction.rollback();
+            if (em != null) {
+                em.getTransaction().rollback();
             }
             throw new DaoException(e.getMessage());
+        } finally {
+            if (em != null) {
+                em.close();
+            }
         }
     }
 
     @Override
     public List<HibernateOrderEntity> findOrdersOfSpecificUser(long idUser, int limit, int page)
             throws DaoException {
-        Transaction transaction = null;
-        try (Session session = factory.openSession()) {
-            transaction = session.beginTransaction();
-            Query query = session
-                    .createQuery("from HibernateOrderEntity o" +
-                            " where o.idUser =: idUser");
-            query.setParameter(Math.toIntExact(idUser), idUser);
-            List orders = query.setFirstResult(limit * (page-1))
+        EntityManager em = null;
+        try {
+            em = factory.createEntityManager();
+            Query query = em.createQuery(HQL_FIND_ORDERS_OF_USER);
+            query.setParameter("idUser", idUser);
+            List orders = query.setFirstResult((page - 1) * limit)
                     .setMaxResults(limit)
                     .getResultList();
-            transaction.commit();
             return orders;
         } catch (Throwable e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
             throw new DaoException(e.getMessage());
+        } finally {
+            if (em != null) {
+                em.close();
+            }
         }
     }
 }
