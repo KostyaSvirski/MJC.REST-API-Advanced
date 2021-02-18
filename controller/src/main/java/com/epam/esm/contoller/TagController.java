@@ -16,7 +16,7 @@ import java.util.Optional;
 public class TagController {
 
     @Autowired
-    TagService tagService;
+    private TagService tagService;
 
     @GetMapping("/")
     public ResponseEntity<?> findAllTags(@RequestParam int limit, @RequestParam int page) {

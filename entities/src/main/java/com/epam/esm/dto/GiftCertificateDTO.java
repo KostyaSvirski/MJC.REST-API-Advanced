@@ -2,6 +2,7 @@ package com.epam.esm.dto;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -144,4 +145,5 @@ public class GiftCertificateDTO extends RepresentationModel<GiftCertificateDTO> 
                 '}';
         return sb;
     }
+
 }

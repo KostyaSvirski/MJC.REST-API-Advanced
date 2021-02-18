@@ -1,6 +1,6 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.OrderDao;
+import com.epam.esm.jdbc.OrderDao;
 import com.epam.esm.converter.OrderDTOToOrderEntityConverter;
 import com.epam.esm.converter.OrderEntityToOrderDTOConverter;
 import com.epam.esm.dto.OrderDTO;
@@ -48,9 +48,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Optional<OrderDTO> find(long id) throws ServiceException {
         try {
-            List<Order> listFromDao = dao.find(id);
-            return listFromDao.stream().map(toOrderDTOConverter)
-                    .findFirst();
+            Optional<Order> order = dao.find(id);
+            return order.map(toOrderDTOConverter);
         } catch (DaoException e) {
             throw new ServiceException("exception in dao");
         }

@@ -1,6 +1,6 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.GiftCertificateDao;
+import com.epam.esm.jdbc.GiftCertificateDao;
 import com.epam.esm.converter.GiftCertificateDTOToEntityConverter;
 import com.epam.esm.converter.GiftCertificateEntityToDTOConverter;
 import com.epam.esm.dto.GiftCertificateDTO;
@@ -56,12 +56,8 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     @Override
     public Optional<GiftCertificateDTO> find(long id) throws ServiceException {
         try {
-            List<GiftCertificate> listFromDao = dao.find(id);
-            List<GiftCertificateDTO> resultList = createResultList(listFromDao);
-            if (resultList.isEmpty()) {
-                return Optional.empty();
-            }
-            return Optional.of(resultList.get(0));
+            Optional<GiftCertificate> certificateFromDao = dao.find(id);
+            return certificateFromDao.map(converterToDto);
         } catch (DaoException e) {
             throw new ServiceException("exception in dao", e.getCause());
         }
@@ -79,8 +75,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         if (chain.validate(certificateDTO)) {
             GiftCertificate certificate = converterToEntity.apply(certificateDTO);
             try {
-                int idOfCreatedCertificate = dao.create(certificate);
-                return idOfCreatedCertificate;
+                return dao.create(certificate);
             } catch (DaoException e) {
                 throw new ServiceException("exception in dao", e.getCause());
             }

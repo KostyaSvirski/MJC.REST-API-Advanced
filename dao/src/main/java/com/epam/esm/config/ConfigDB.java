@@ -1,27 +1,25 @@
 package com.epam.esm.config;
 
-import com.epam.esm.persistence.HibernateGiftCertificateEntity;
-import com.epam.esm.persistence.HibernateOrderEntity;
-import com.epam.esm.persistence.HibernateTagEntity;
-import com.epam.esm.persistence.HibernateUserEntity;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.hibernate.SessionFactory;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.service.ServiceRegistry;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.AbstractJpaVendorAdapter;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
+import java.util.Properties;
 
 @Configuration
 @PropertySource("classpath:/database.properties")
 @ComponentScan("com.epam.esm")
-public class    ConfigDB {
+@EnableTransactionManagement
+public class ConfigDB {
 
     @Value("${hibernate.connection.driver_class}")
     private String driverClassName;
@@ -43,6 +41,14 @@ public class    ConfigDB {
     private String serverTimeZone;
     @Value("${hibernate.connection.useUnicode}")
     private String useUnicode;
+    @Value("${hibernate.current_session_context_class}")
+    private String contextClass;
+    @Value("${hibernate.dialect}")
+    private String dialect;
+    @Value("${hibernate.show_sql}")
+    private String showSql;
+    @Value("${hibernate.hbm2ddl.auto}")
+    private String auto;
 
     @Bean
     public BasicDataSource dataSource() {
@@ -60,17 +66,38 @@ public class    ConfigDB {
         return dataSource;
     }
 
-    @Qualifier("product")
     @Bean
-    public EntityManagerFactory entityManagerFactory() {
-        return Persistence
-                .createEntityManagerFactory("gift-certificates-api");
+    public LocalContainerEntityManagerFactoryBean entityManagerFactoryTest() {
+        LocalContainerEntityManagerFactoryBean factoryBean = new LocalContainerEntityManagerFactoryBean();
+        factoryBean.setDataSource(dataSource());
+        factoryBean.setJpaProperties(jpaProperties());
+        factoryBean.setJpaVendorAdapter(vendorAdapter());
+        factoryBean.setPackagesToScan("com.epam.esm");
+        return factoryBean;
     }
 
-    @Qualifier("test")
+    private AbstractJpaVendorAdapter vendorAdapter() {
+        AbstractJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        vendorAdapter.setShowSql(Boolean.getBoolean(showSql));
+        vendorAdapter.setGenerateDdl(true);
+        return vendorAdapter;
+    }
+
+    private Properties jpaProperties() {
+        Properties propJpa = new Properties();
+        propJpa.put("hibernate.hbm2ddl.auto", auto);
+        propJpa.put("hibernate.show_sql", showSql);
+        propJpa.put("hibernate.current_session_context_class", contextClass);
+        propJpa.put("hibernate.dialect", dialect);
+        return propJpa;
+    }
+
     @Bean
-    public EntityManagerFactory entityManagerFactoryTest() {
-        return Persistence
-                .createEntityManagerFactory("gift-certificates-test");
+    public PlatformTransactionManager transactionManager() {
+        JpaTransactionManager transactionManager = new JpaTransactionManager();
+        transactionManager.setEntityManagerFactory(
+                this.entityManagerFactoryTest().getObject());
+        return transactionManager;
+
     }
 }

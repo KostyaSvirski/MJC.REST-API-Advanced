@@ -1,10 +1,13 @@
 package com.epam.esm.contoller;
 
 import com.epam.esm.dto.OrderDTO;
-import com.epam.esm.dto.hypermedia.CreateActionHypermedia;
-import com.epam.esm.dto.hypermedia.ActionHypermedia;
+import com.epam.esm.dto.CreateActionHypermedia;
+import com.epam.esm.dto.ActionHypermedia;
 import com.epam.esm.exception.ServiceException;
 import com.epam.esm.service.OrderService;
+import com.epam.esm.util.builder.ActionHypermediaLinkBuilder;
+import com.epam.esm.util.builder.CreateHypermediaLinkBuilder;
+import com.epam.esm.util.builder.OrderLinkBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
@@ -25,35 +28,24 @@ public class OrderController {
     private static final String DEFAULT_PAGE = "1";
 
     @Autowired
-    OrderService service;
+    private OrderService service;
 
     @GetMapping("/")
     public ResponseEntity<?> retrieveAllOrders(@RequestParam(defaultValue = DEFAULT_LIMIT) int limit,
                                                @RequestParam(defaultValue = DEFAULT_PAGE) int page) {
         try {
             List<OrderDTO> resultList = service.findAll(limit, page);
-            for (OrderDTO dto : resultList) {
-                dto.add(WebMvcLinkBuilder
-                        .linkTo(WebMvcLinkBuilder.methodOn(OrderController.class)
-                                .retrieveSpecificOrder(dto.getId()))
-                        .withRel("order"));
-                dto.add(WebMvcLinkBuilder
-                        .linkTo(WebMvcLinkBuilder.methodOn(UserController.class)
-                                .retrieveSpecificUser(dto.getIdUser()))
-                        .withRel("user"));
-                dto.add(WebMvcLinkBuilder
-                        .linkTo(WebMvcLinkBuilder.methodOn(GiftCertificateController.class)
-                                .findSpecificCertificate(dto.getIdCertificate()))
-                        .withRel("certificate"));
+            for (int i = 0; i < resultList.size(); i++) {
+                OrderLinkBuilder builder = new OrderLinkBuilder(resultList.get(i));
+                builder.buildCertificateReferenceLink().buildUserReferenceLink()
+                        .buildRetrieveSpecificOrderLink();
+                resultList.set(i, builder.getHypermedia());
             }
             return new ResponseEntity<>(resultList, HttpStatus.OK);
         } catch (ServiceException e) {
-            ActionHypermedia actionHypermedia = new ActionHypermedia(e.getMessage());
-            actionHypermedia.add(WebMvcLinkBuilder
-                    .linkTo(WebMvcLinkBuilder.methodOn(OrderController.class)
-                            .retrieveAllOrders(limit, page))
-                    .withSelfRel());
-            return new ResponseEntity<>(actionHypermedia, HttpStatus.INTERNAL_SERVER_ERROR);
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(e.getMessage()));
+            builder.buildRetrieveAllOrdersLink(limit, page);
+            return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -62,31 +54,20 @@ public class OrderController {
         try {
             Optional<OrderDTO> order = service.find(id);
             if (order.isPresent()) {
-                OrderDTO dto = order.get();
-                dto.add(WebMvcLinkBuilder
-                        .linkTo(WebMvcLinkBuilder.methodOn(UserController.class)
-                                .retrieveSpecificUser(dto.getIdUser()))
-                        .withRel("user"));
-                dto.add(WebMvcLinkBuilder
-                        .linkTo(WebMvcLinkBuilder.methodOn(GiftCertificateController.class)
-                                .findSpecificCertificate(dto.getIdCertificate()))
-                        .withRel("certificate"));
-                return new ResponseEntity<>(dto, HttpStatus.OK);
+                OrderLinkBuilder builder = new OrderLinkBuilder(order.get());
+                builder.buildUserReferenceLink().buildCertificateReferenceLink();
+                return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.OK);
             } else {
                 ActionHypermedia actionHypermedia = new ActionHypermedia("not found with id" + id);
-                actionHypermedia.add(WebMvcLinkBuilder
-                        .linkTo(WebMvcLinkBuilder.methodOn(OrderController.class)
-                                .retrieveAllOrders(DEFAULT_LIMIT_INT, DEFAULT_PAGE_INT))
-                        .withRel("orders"));
-                return new ResponseEntity<>(actionHypermedia, HttpStatus.NOT_FOUND);
+                ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(actionHypermedia);
+                builder.buildRetrieveAllOrdersLink(DEFAULT_LIMIT_INT, DEFAULT_PAGE_INT);
+                return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.NOT_FOUND);
             }
         } catch (ServiceException e) {
             ActionHypermedia actionHypermedia = new ActionHypermedia(e.getMessage());
-            actionHypermedia.add(WebMvcLinkBuilder
-                    .linkTo(WebMvcLinkBuilder.methodOn(OrderController.class)
-                            .retrieveSpecificOrder(id))
-                    .withSelfRel());
-            return new ResponseEntity<>(actionHypermedia, HttpStatus.INTERNAL_SERVER_ERROR);
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(actionHypermedia);
+            builder.buildRetrieveSpecificOrderSelfLink(id);
+            return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -96,27 +77,21 @@ public class OrderController {
         try {
             int result = service.create(order);
             if (result != 0) {
-                CreateActionHypermedia hypermedia = new CreateActionHypermedia(result);
-                hypermedia.add(WebMvcLinkBuilder
-                        .linkTo(WebMvcLinkBuilder.methodOn(UserController.class)
-                                .retrieveOrdersOfSpecificUser(DEFAULT_LIMIT_INT, DEFAULT_PAGE_INT, order.getIdUser()))
-                        .withRel("orders of user"));
-                return new ResponseEntity<>(hypermedia, HttpStatus.OK);
+                CreateHypermediaLinkBuilder builder = new CreateHypermediaLinkBuilder
+                        (new CreateActionHypermedia(result));
+                builder.buildNewOrderLink(result);
+                return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.OK);
             } else {
-                ActionHypermedia actionHypermedia = new ActionHypermedia("not valid data");
-                actionHypermedia.add(WebMvcLinkBuilder
-                        .linkTo(WebMvcLinkBuilder.methodOn(OrderController.class)
-                                .createNewOrder(order))
-                        .withSelfRel());
-                return new ResponseEntity<>(actionHypermedia, HttpStatus.BAD_REQUEST);
+                ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
+                        (new ActionHypermedia("not valid data"));
+                builder.buildCreateOrderSelfLink(order);
+                return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.BAD_REQUEST);
             }
         } catch (ServiceException e) {
-            ActionHypermedia actionHypermedia = new ActionHypermedia(e.getMessage());
-            actionHypermedia.add(WebMvcLinkBuilder
-                    .linkTo(WebMvcLinkBuilder.methodOn(OrderController.class)
-                            .createNewOrder(order))
-                    .withSelfRel());
-            return new ResponseEntity<>(actionHypermedia, HttpStatus.INTERNAL_SERVER_ERROR);
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
+                    (new ActionHypermedia(e.getMessage()));
+            builder.buildCreateOrderSelfLink(order);
+            return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }

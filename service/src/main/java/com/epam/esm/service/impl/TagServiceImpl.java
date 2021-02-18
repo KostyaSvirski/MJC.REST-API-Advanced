@@ -1,6 +1,6 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.TagDao;
+import com.epam.esm.jdbc.TagDao;
 import com.epam.esm.converter.TagDTOToTagEntityConverter;
 import com.epam.esm.converter.TagEntityToTagDTOConverter;
 import com.epam.esm.dto.TagDTO;
@@ -48,10 +48,8 @@ public class TagServiceImpl implements TagService {
     @Override
     public Optional<TagDTO> find(long id) throws ServiceException {
         try {
-            List<Tag> listFromDao = tagDao.find(id);
-            return listFromDao.stream()
-                    .map(converterToDTO)
-                    .findFirst();
+            Optional<Tag> tagFromDao = tagDao.find(id);
+            return tagFromDao.map(converterToDTO);
         } catch (DaoException e) {
             throw new ServiceException("exception in dao", e.getCause());
         }

@@ -1,23 +1,18 @@
 package com.epam.esm.contoller;
 
+import com.epam.esm.dto.ActionHypermedia;
+import com.epam.esm.dto.CreateActionHypermedia;
 import com.epam.esm.dto.GiftCertificateDTO;
-import com.epam.esm.dto.hypermedia.CreateActionHypermedia;
-import com.epam.esm.dto.hypermedia.ActionHypermedia;
 import com.epam.esm.exception.ServiceException;
 import com.epam.esm.service.GiftCertificateService;
+import com.epam.esm.util.builder.ActionHypermediaLinkBuilder;
+import com.epam.esm.util.builder.CertificateLinkBuilder;
+import com.epam.esm.util.builder.CreateHypermediaLinkBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.List;
@@ -56,29 +51,24 @@ public class GiftCertificateController {
                 results = service.findAll(limit, page);
             }
             if (results == null || results.isEmpty()) {
-                ActionHypermedia actionHypermedia = new ActionHypermedia("not found");
-                actionHypermedia.add(WebMvcLinkBuilder
-                        .linkTo(WebMvcLinkBuilder.methodOn(GiftCertificateController.class)
-                                .retrieveCertificates(limit, page, partOfName, partOfDescription, nameOfTag, field,
-                                        method))
-                        .withSelfRel());
-                return new ResponseEntity<>(actionHypermedia, HttpStatus.NOT_FOUND);
+                ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
+                        (new ActionHypermedia("not found"));
+                builder.buildRetrieveAllCertificateSelfLink(limit, page, partOfName, partOfDescription, nameOfTag,
+                        field, method);
+                return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.NOT_FOUND);
             }
-            for (GiftCertificateDTO dto : results) {
-                dto.add(WebMvcLinkBuilder
-                        .linkTo(WebMvcLinkBuilder.methodOn(GiftCertificateController.class)
-                                .findSpecificCertificate(dto.getId()))
-                        .withRel("certificate"));
+            for (int i = 0; i < results.size(); i++) {
+                CertificateLinkBuilder builder = new CertificateLinkBuilder(results.get(i));
+                builder.buildCertificateHypermedia();
+                results.set(i, builder.getHypermedia());
             }
             return new ResponseEntity<>(results, HttpStatus.OK);
         } catch (ServiceException e) {
-            ActionHypermedia actionHypermedia = new ActionHypermedia(e.getMessage());
-            actionHypermedia.add(WebMvcLinkBuilder
-                    .linkTo(WebMvcLinkBuilder.methodOn(GiftCertificateController.class)
-                            .retrieveCertificates(limit, page, partOfName, partOfDescription, nameOfTag, field,
-                                    method))
-                    .withSelfRel());
-            return new ResponseEntity<>(actionHypermedia, HttpStatus.INTERNAL_SERVER_ERROR);
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
+                    (new ActionHypermedia(e.getMessage()));
+            builder.buildRetrieveAllCertificateSelfLink(limit, page, partOfName, partOfDescription, nameOfTag,
+                    field, method);
+            return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -93,12 +83,10 @@ public class GiftCertificateController {
                             ("certificate with id " + id + "not found"),
                             HttpStatus.NOT_FOUND));
         } catch (ServiceException e) {
-            ActionHypermedia actionHypermedia = new ActionHypermedia(e.getMessage());
-            actionHypermedia.add(WebMvcLinkBuilder
-                    .linkTo(WebMvcLinkBuilder.methodOn(GiftCertificateController.class)
-                            .findSpecificCertificate(id))
-                    .withSelfRel());
-            return new ResponseEntity<>(actionHypermedia, HttpStatus.INTERNAL_SERVER_ERROR);
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
+                    (new ActionHypermedia(e.getMessage()));
+            builder.buildRetrieveSpecificCertificateSelfLink(id);
+            return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -109,27 +97,21 @@ public class GiftCertificateController {
         try {
             int result = service.create(certificateDTO);
             if (result != 0) {
-                CreateActionHypermedia hypermedia = new CreateActionHypermedia(result);
-                hypermedia.add(WebMvcLinkBuilder
-                        .linkTo(WebMvcLinkBuilder.methodOn(GiftCertificateController.class)
-                                .findSpecificCertificate(result))
-                        .withRel("certificate"));
-                return new ResponseEntity<>(hypermedia, HttpStatus.CREATED);
+                CreateHypermediaLinkBuilder builder = new CreateHypermediaLinkBuilder
+                        (new CreateActionHypermedia(result));
+                builder.buildNewCertificateLink(result);
+                return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.CREATED);
             } else {
-                ActionHypermedia actionHypermedia = new ActionHypermedia("not valid data");
-                actionHypermedia.add(WebMvcLinkBuilder
-                        .linkTo(WebMvcLinkBuilder.methodOn(GiftCertificateController.class)
-                                .createNewCertificate(certificateDTO))
-                        .withSelfRel());
-                return new ResponseEntity<>(actionHypermedia, HttpStatus.BAD_REQUEST);
+                ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
+                        (new ActionHypermedia("not valid data"));
+                builder.buildCreateCertificateSelfLink(certificateDTO);
+                return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.BAD_REQUEST);
             }
         } catch (ServiceException e) {
-            ActionHypermedia actionHypermedia = new ActionHypermedia(e.getMessage());
-            actionHypermedia.add(WebMvcLinkBuilder
-                    .linkTo(WebMvcLinkBuilder.methodOn(GiftCertificateController.class)
-                            .createNewCertificate(certificateDTO))
-                    .withSelfRel());
-            return new ResponseEntity<>(actionHypermedia, HttpStatus.INTERNAL_SERVER_ERROR);
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
+                    (new ActionHypermedia(e.getMessage()));
+            builder.buildCreateCertificateSelfLink(certificateDTO);
+            return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -140,12 +122,10 @@ public class GiftCertificateController {
             return new ResponseEntity<>(new ActionHypermedia("certificate with id " + id + " deleted"),
                     HttpStatus.OK);
         } catch (ServiceException e) {
-            ActionHypermedia actionHypermedia = new ActionHypermedia(e.getMessage());
-            actionHypermedia.add(WebMvcLinkBuilder
-                    .linkTo(WebMvcLinkBuilder.methodOn(GiftCertificateController.class)
-                            .deleteCertificate(id))
-                    .withSelfRel());
-            return new ResponseEntity<>(actionHypermedia, HttpStatus.NOT_FOUND);
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
+                    (new ActionHypermedia(e.getMessage()));
+            builder.buildDeleteCertificateSelfLink(id);
+            return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.NOT_FOUND);
         }
 
     }
@@ -155,27 +135,21 @@ public class GiftCertificateController {
         try {
             boolean result = service.update(certificate, id);
             if (result) {
-                ActionHypermedia actionHypermedia = new ActionHypermedia("updated with id" + id);
-                actionHypermedia.add(WebMvcLinkBuilder
-                        .linkTo(WebMvcLinkBuilder.methodOn(GiftCertificateController.class)
-                                .findSpecificCertificate(id))
-                        .withRel("certificate"));
-                return new ResponseEntity<>(actionHypermedia, HttpStatus.NO_CONTENT);
+                ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
+                        (new ActionHypermedia("updated with id" + id));
+                builder.buildRetrieveSpecificCertificateLink(id);
+                return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.NO_CONTENT);
             } else {
-                ActionHypermedia actionHypermedia = new ActionHypermedia("not valid data");
-                actionHypermedia.add(WebMvcLinkBuilder
-                        .linkTo(WebMvcLinkBuilder.methodOn(GiftCertificateController.class)
-                                .findSpecificCertificate(id))
-                        .withRel("certificate"));
-                return new ResponseEntity<>(actionHypermedia, HttpStatus.BAD_REQUEST);
+                ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
+                        (new ActionHypermedia("not valid data"));
+                builder.buildUpdateCertificateSelfLink(certificate, id);
+                return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.BAD_REQUEST);
             }
         } catch (ServiceException e) {
-            ActionHypermedia actionHypermedia = new ActionHypermedia(e.getMessage());
-            actionHypermedia.add(WebMvcLinkBuilder
-                    .linkTo(WebMvcLinkBuilder.methodOn(GiftCertificateController.class)
-                            .updateCertificate(certificate, id))
-                    .withSelfRel());
-            return new ResponseEntity<>(actionHypermedia, HttpStatus.NOT_FOUND);
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
+                    (new ActionHypermedia(e.getMessage()));
+            builder.buildUpdateCertificateSelfLink(certificate, id);
+            return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.NOT_FOUND);
         }
 
     }

@@ -1,7 +1,7 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.OrderDao;
-import com.epam.esm.UserDao;
+import com.epam.esm.jdbc.OrderDao;
+import com.epam.esm.jdbc.UserDao;
 import com.epam.esm.converter.OrderEntityToOrderDTOConverter;
 import com.epam.esm.converter.UserEntityToUserDTOConverter;
 import com.epam.esm.dto.OrderDTO;
@@ -50,9 +50,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<UserDTO> find(long id) throws ServiceException {
         try {
-            List<User> listFromDao = daoUser.find(id);
-            return listFromDao.stream().map(toUserDTOConverter)
-                    .findFirst();
+            Optional<User> userFromDao = daoUser.find(id);
+            return userFromDao.map(toUserDTOConverter);
         } catch (DaoException e) {
             throw new ServiceException("exception in dao");
         }

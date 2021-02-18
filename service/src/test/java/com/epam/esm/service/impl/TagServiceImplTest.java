@@ -1,6 +1,6 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.TagDao;
+import com.epam.esm.jdbc.TagDao;
 import com.epam.esm.config.ServiceConfig;
 import com.epam.esm.converter.TagDTOToTagEntityConverter;
 import com.epam.esm.converter.TagEntityToTagDTOConverter;
@@ -8,7 +8,7 @@ import com.epam.esm.dto.TagDTO;
 import com.epam.esm.entity.Tag;
 import com.epam.esm.exception.DaoException;
 import com.epam.esm.exception.ServiceException;
-import com.epam.esm.impl.TagDaoImpl;
+import com.epam.esm.jdbc.impl.TagDaoImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +22,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;

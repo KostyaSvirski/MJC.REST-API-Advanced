@@ -1,6 +1,6 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.GiftCertificateDao;
+import com.epam.esm.jdbc.GiftCertificateDao;
 import com.epam.esm.config.ServiceConfig;
 import com.epam.esm.converter.GiftCertificateDTOToEntityConverter;
 import com.epam.esm.converter.GiftCertificateEntityToDTOConverter;
@@ -9,7 +9,7 @@ import com.epam.esm.dto.TagDTO;
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.exception.DaoException;
 import com.epam.esm.exception.ServiceException;
-import com.epam.esm.impl.CertificateDaoImpl;
+import com.epam.esm.jdbc.impl.CertificateDaoImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

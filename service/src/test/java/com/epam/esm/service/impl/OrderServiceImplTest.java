@@ -1,6 +1,6 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.OrderDao;
+import com.epam.esm.jdbc.OrderDao;
 import com.epam.esm.config.ServiceConfig;
 import com.epam.esm.converter.OrderDTOToOrderEntityConverter;
 import com.epam.esm.converter.OrderEntityToOrderDTOConverter;
@@ -8,7 +8,7 @@ import com.epam.esm.dto.OrderDTO;
 import com.epam.esm.entity.Order;
 import com.epam.esm.exception.DaoException;
 import com.epam.esm.exception.ServiceException;
-import com.epam.esm.impl.OrderDaoImpl;
+import com.epam.esm.jdbc.impl.OrderDaoImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

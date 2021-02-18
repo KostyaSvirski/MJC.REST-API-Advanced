@@ -5,10 +5,10 @@
              version="2.1">
     <persistence-unit name="gift-certificates-api" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <class>com.epam.esm.persistence.HibernateGiftCertificateEntity</class>
-        <class>com.epam.esm.persistence.HibernateTagEntity</class>
-        <class>com.epam.esm.persistence.HibernateOrderEntity</class>
-        <class>com.epam.esm.persistence.HibernateUserEntity</class>
+        <class>com.epam.esm.persistence.GiftCertificateEntity</class>
+        <class>com.epam.esm.persistence.TagEntity</class>
+        <class>com.epam.esm.persistence.OrderEntity</class>
+        <class>com.epam.esm.persistence.UserEntity</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5Dialect"/>
@@ -23,10 +23,10 @@
     </persistence-unit>
     <persistence-unit name="gift-certificates-test" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <class>com.epam.esm.persistence.HibernateGiftCertificateEntity</class>
-        <class>com.epam.esm.persistence.HibernateTagEntity</class>
-        <class>com.epam.esm.persistence.HibernateOrderEntity</class>
-        <class>com.epam.esm.persistence.HibernateUserEntity</class>
+        <class>com.epam.esm.persistence.GiftCertificateEntity</class>
+        <class>com.epam.esm.persistence.TagEntity</class>
+        <class>com.epam.esm.persistence.OrderEntity</class>
+        <class>com.epam.esm.persistence.UserEntity</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
