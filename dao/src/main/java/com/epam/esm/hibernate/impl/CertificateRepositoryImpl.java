@@ -26,7 +26,7 @@ public class CertificateRepositoryImpl implements CertificateRepository {
 
     @Override
     public Optional<GiftCertificateEntity> find(long id) throws DaoException {
-        return Optional.of(em.find(GiftCertificateEntity.class, id));
+        return Optional.ofNullable(em.find(GiftCertificateEntity.class, id));
     }
 
     @Override
@@ -41,8 +41,7 @@ public class CertificateRepositoryImpl implements CertificateRepository {
     @Override
     public int create(GiftCertificateEntity entity) throws DaoException {
         em.persist(entity);
-        int idNewCert = (int) entity.getId();
-        return idNewCert;
+        return (int) entity.getId();
     }
 
 
@@ -62,7 +61,7 @@ public class CertificateRepositoryImpl implements CertificateRepository {
         }
     }
 
-    private GiftCertificateEntity insertDataForUpdate
+    private void insertDataForUpdate
             (GiftCertificateEntity example, GiftCertificateEntity cert) {
         if (example.getName() != null) {
             cert.setName(example.getName());
@@ -85,62 +84,46 @@ public class CertificateRepositoryImpl implements CertificateRepository {
         if (example.getTagsDependsOnCertificate() != null) {
             cert.setTagsDependsOnCertificate(example.getTagsDependsOnCertificate());
         }
-        return cert;
     }
 
     @Override
-    public List<GiftCertificateEntity> sortCertificatesByName(String method, int limit, int page)
-            throws DaoException {
+    public List<GiftCertificateEntity> sortCertificatesByName(String method, int limit, int page) {
         return getSortedCertificates(method, limit, page, HQL_ORDER_BY_NAME);
     }
 
     @Override
-    public List<GiftCertificateEntity> sortCertificatesByCreateDate
-            (String method, int limit, int page)
-            throws DaoException {
+    public List<GiftCertificateEntity> sortCertificatesByCreateDate(String method, int limit, int page) {
         return getSortedCertificates(method, limit, page, HQL_ORDER_BY_CREATE_DATE);
-
     }
 
     private List<GiftCertificateEntity> getSortedCertificates
-            (String method, int limit, int page, String hqlOrderBy) throws DaoException {
-        try {
-            return em.createQuery(HQL_RETRIEVE_ALL + hqlOrderBy + method)
-                    .setFirstResult(limit * (page - 1))
-                    .setMaxResults(limit)
-                    .getResultList();
-        } catch (Throwable e) {
-            throw new DaoException(e.getMessage());
-        } finally {
-            if (em != null) {
-                em.close();
-            }
-        }
+            (String method, int limit, int page, String hqlOrderBy) {
+        return em.createQuery(HQL_RETRIEVE_ALL + hqlOrderBy + method)
+                .setFirstResult(limit * (page - 1))
+                .setMaxResults(limit)
+                .getResultList();
     }
 
     @Override
     public List<GiftCertificateEntity> searchByName
-            (String name, int limit, int page) throws DaoException {
+            (String name, int limit, int page) {
         return searchCerts(limit, page, HQL_CONDITION_NAME, name);
     }
 
     @Override
     public List<GiftCertificateEntity> searchByDescription
-            (String description, int limit, int page) throws DaoException {
+            (String description, int limit, int page) {
         return searchCerts(limit, page, HQL_CONDITION_DESCRIPTION, description);
     }
 
     private List<GiftCertificateEntity> searchCerts
-            (int limit, int page, String hqlCondition, String param) throws DaoException {
-        try {
-            Query query = em.createQuery(HQL_RETRIEVE_ALL + hqlCondition);
-            query.setParameter(1, param);
-            return query.setFirstResult(limit * (page - 1))
-                    .setMaxResults(limit)
-                    .getResultList();
-        } catch (Throwable e) {
-            throw new DaoException(e.getMessage());
-        }
+            (int limit, int page, String hqlCondition, String param) {
+        Query query = em.createQuery(HQL_RETRIEVE_ALL + hqlCondition);
+        query.setParameter(1, param);
+        return query.setFirstResult(limit * (page - 1))
+                .setMaxResults(limit)
+                .getResultList();
+
     }
 
     // TODO: 09.02.2021

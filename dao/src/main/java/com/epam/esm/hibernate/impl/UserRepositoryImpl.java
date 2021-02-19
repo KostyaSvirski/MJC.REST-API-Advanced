@@ -20,7 +20,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Optional<UserEntity> find(long id) throws DaoException {
-        return Optional.of(em.find(UserEntity.class, id));
+        return Optional.ofNullable(em.find(UserEntity.class, id));
     }
 
     @Override

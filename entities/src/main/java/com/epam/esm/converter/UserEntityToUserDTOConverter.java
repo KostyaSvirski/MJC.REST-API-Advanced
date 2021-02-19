@@ -1,20 +1,18 @@
 package com.epam.esm.converter;
 
 import com.epam.esm.dto.UserDTO;
-import com.epam.esm.entity.User;
+import com.epam.esm.persistence.UserEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.function.Function;
 
 @Component
-public class UserEntityToUserDTOConverter implements Function<User, UserDTO> {
+public class UserEntityToUserDTOConverter implements Function<UserEntity, UserDTO> {
 
     @Override
-    public UserDTO apply(User user) {
-        UserDTO dto = new UserDTO();
-        dto.setId(user.getId());
-        dto.setName(user.getName());
-        dto.setSurname(user.getSurname());
-        return dto;
+    public UserDTO apply(UserEntity user) {
+        return UserDTO.builder().name(user.getName())
+                .surname(user.getSurname())
+                .id(user.getId()).build();
     }
 }

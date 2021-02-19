@@ -9,7 +9,6 @@ import com.epam.esm.util.builder.ActionHypermediaLinkBuilder;
 import com.epam.esm.util.builder.CreateHypermediaLinkBuilder;
 import com.epam.esm.util.builder.OrderLinkBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -73,7 +72,7 @@ public class OrderController {
 
     @PostMapping("/")
     public ResponseEntity<?> createNewOrder(@RequestBody OrderDTO order) {
-        order.setTimeOfRelease(Instant.now().toString());
+        order.setPurchaseTime(Instant.now().toString());
         try {
             int result = service.create(order);
             if (result != 0) {

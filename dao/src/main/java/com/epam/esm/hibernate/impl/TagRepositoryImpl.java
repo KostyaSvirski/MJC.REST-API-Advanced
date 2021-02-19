@@ -21,31 +21,21 @@ public class TagRepositoryImpl implements TagRepository {
 
     @Override
     public Optional<TagEntity> find(long id) throws DaoException {
-        return Optional.of(em.find(TagEntity.class, id));
+        return Optional.ofNullable(em.find(TagEntity.class, id));
     }
 
     @Override
     public List<TagEntity> findAll(int limit, int page) throws DaoException {
-        try {
-            List tags = em.createQuery(HQL_FIND_ALL)
-                    .setFirstResult((page - 1) * limit)
-                    .setMaxResults(limit)
-                    .getResultList();
-            return tags;
-        } catch (Throwable e) {
-            throw new DaoException(e.getMessage());
-        }
+        return em.createQuery(HQL_FIND_ALL)
+                .setFirstResult((page - 1) * limit)
+                .setMaxResults(limit)
+                .getResultList();
     }
 
     @Override
     public int create(TagEntity entity) throws DaoException {
-        try {
-            em.persist(entity);
-            int idNewTag = (int) entity.getId();
-            return idNewTag;
-        } catch (Throwable e) {
-            throw new DaoException(e.getMessage());
-        }
+        em.persist(entity);
+        return (int) entity.getId();
     }
 
     @Override

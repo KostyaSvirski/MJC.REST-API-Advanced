@@ -1,17 +1,14 @@
 package com.epam.esm.converter;
 
 import com.epam.esm.dto.UserDTO;
-import com.epam.esm.entity.User;
+import com.epam.esm.persistence.UserEntity;
 
 import java.util.function.Function;
 
-public class UserDTOToUserEntityConverter implements Function<UserDTO, User> {
+public class UserDTOToUserEntityConverter implements Function<UserDTO, UserEntity> {
 
     @Override
-    public User apply(UserDTO userDTO) {
-        return new User.UserBuilder().buildId(userDTO.getId())
-                .buildName(userDTO.getName())
-                .buildSurname(userDTO.getSurname())
-                .finishBuilding();
+    public UserEntity apply(UserDTO userDTO) {
+        return UserEntity.builder().name(userDTO.getName()).surname(userDTO.getSurname()).build();
     }
 }

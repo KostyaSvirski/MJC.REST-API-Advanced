@@ -2,27 +2,19 @@ package com.epam.esm.persistence;
 
 import lombok.*;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
-import java.sql.Date;
-import java.sql.Timestamp;
+import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(exclude = "tagsDependsOnCertificate")
 @Getter
 @Setter
 @ToString(exclude = "tagsDependsOnCertificate")
-@NoArgsConstructor
 @Entity
 @Table(name = "gift_certificate")
 public class GiftCertificateEntity {
@@ -37,9 +29,10 @@ public class GiftCertificateEntity {
     private long price;
     private int duration;
     @Column(name = "create_date")
-    private Date createDate;
+    private LocalDate createDate;
     @Column(name = "last_update_date")
-    private Timestamp lastUpdateDate;
+    private LocalDateTime lastUpdateDate;
+
     @ManyToMany(fetch = FetchType.EAGER,
             cascade = {CascadeType.PERSIST,
                     CascadeType.DETACH,
@@ -50,6 +43,7 @@ public class GiftCertificateEntity {
             joinColumns = {@JoinColumn(name = "id_certificate")},
             inverseJoinColumns = {@JoinColumn(name = "id_tag")}
     )
+    @Builder.Default
     private Set<TagEntity> tagsDependsOnCertificate = new HashSet<>();
 
     public void addTag(TagEntity tag) {
@@ -65,3 +59,5 @@ public class GiftCertificateEntity {
     }
 
 }
+
+

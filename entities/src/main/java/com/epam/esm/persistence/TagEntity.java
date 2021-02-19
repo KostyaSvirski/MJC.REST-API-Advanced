@@ -1,10 +1,6 @@
 package com.epam.esm.persistence;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -22,7 +18,9 @@ import java.util.Set;
 @ToString(exclude = "certificateEntitySet")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "tag_for_certificates")
 public class TagEntity {
@@ -38,6 +36,7 @@ public class TagEntity {
                     CascadeType.DETACH,
                     CascadeType.REFRESH,
                     CascadeType.REMOVE}, mappedBy = "tagsDependsOnCertificate")
+    @Builder.Default
     private Set<GiftCertificateEntity> certificateEntitySet = new HashSet<>();
 
     public void addCertificate(GiftCertificateEntity cert) {

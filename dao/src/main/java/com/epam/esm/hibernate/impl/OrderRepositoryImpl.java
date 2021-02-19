@@ -24,7 +24,7 @@ public class OrderRepositoryImpl implements OrderRepository {
 
     @Override
     public Optional<OrderEntity> find(long id) {
-        return Optional.of(em.find(OrderEntity.class, id));
+        return Optional.ofNullable(em.find(OrderEntity.class, id));
     }
 
     @Override
@@ -38,16 +38,12 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public List<OrderEntity> findOrderOfSpecificUser(long idUser, long idOrder) throws DaoException {
-        try {
-            Query query = em.createQuery(HQL_FIND_ORDERS_OF_USER + SUFFIX_FOR_ONE_ORDER);
-            query.setParameter("idUser", idUser);
-            query.setParameter("idOrder", idOrder);
-            List orders = query.getResultList();
-            return orders;
-        } catch (Throwable e) {
-            throw new DaoException(e.getMessage());
-        }
+    public List<OrderEntity> findOrderOfSpecificUser(long idUser, long idOrder) {
+        Query query = em.createQuery(HQL_FIND_ORDERS_OF_USER + SUFFIX_FOR_ONE_ORDER);
+        query.setParameter("idUser", idUser);
+        query.setParameter("idOrder", idOrder);
+        List orders = query.getResultList();
+        return orders;
     }
 
     @Override
@@ -58,17 +54,12 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public List<OrderEntity> findOrdersOfSpecificUser(long idUser, int limit, int page)
-            throws DaoException {
-        try {
-            Query query = em.createQuery(HQL_FIND_ORDERS_OF_USER);
-            query.setParameter("idUser", idUser);
-            List orders = query.setFirstResult((page - 1) * limit)
-                    .setMaxResults(limit)
-                    .getResultList();
-            return orders;
-        } catch (Throwable e) {
-            throw new DaoException(e.getMessage());
-        }
+    public List<OrderEntity> findOrdersOfSpecificUser(long idUser, int limit, int page) {
+        Query query = em.createQuery(HQL_FIND_ORDERS_OF_USER);
+        query.setParameter("idUser", idUser);
+        List orders = query.setFirstResult((page - 1) * limit)
+                .setMaxResults(limit)
+                .getResultList();
+        return orders;
     }
 }

@@ -67,7 +67,7 @@ public class ConfigDB {
     }
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactoryTest() {
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
         LocalContainerEntityManagerFactoryBean factoryBean = new LocalContainerEntityManagerFactoryBean();
         factoryBean.setDataSource(dataSource());
         factoryBean.setJpaProperties(jpaProperties());
@@ -95,8 +95,7 @@ public class ConfigDB {
     @Bean
     public PlatformTransactionManager transactionManager() {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(
-                this.entityManagerFactoryTest().getObject());
+        transactionManager.setEntityManagerFactory(this.entityManagerFactory().getObject());
         return transactionManager;
 
     }

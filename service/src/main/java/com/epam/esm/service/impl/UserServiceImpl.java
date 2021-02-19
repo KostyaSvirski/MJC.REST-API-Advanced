@@ -1,7 +1,5 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.jdbc.OrderDao;
-import com.epam.esm.jdbc.UserDao;
 import com.epam.esm.converter.OrderEntityToOrderDTOConverter;
 import com.epam.esm.converter.UserEntityToUserDTOConverter;
 import com.epam.esm.dto.OrderDTO;
@@ -10,6 +8,10 @@ import com.epam.esm.entity.Order;
 import com.epam.esm.entity.User;
 import com.epam.esm.exception.DaoException;
 import com.epam.esm.exception.ServiceException;
+import com.epam.esm.hibernate.OrderRepository;
+import com.epam.esm.hibernate.UserRepository;
+import com.epam.esm.persistence.OrderEntity;
+import com.epam.esm.persistence.UserEntity;
 import com.epam.esm.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,17 +23,17 @@ import java.util.stream.Collectors;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final OrderDao daoOrder;
-    private final UserDao daoUser;
+    private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
     private final UserEntityToUserDTOConverter toUserDTOConverter;
     private final OrderEntityToOrderDTOConverter toOrderDTOConverter;
 
     @Autowired
-    public UserServiceImpl(OrderDao daoOrder, UserDao daoUser,
+    public UserServiceImpl(OrderRepository orderRepository, UserRepository userRepository,
                            UserEntityToUserDTOConverter toUserDTOConverter,
                            OrderEntityToOrderDTOConverter toOrderDTOConverter) {
-        this.daoOrder = daoOrder;
-        this.daoUser = daoUser;
+        this.orderRepository = orderRepository;
+        this.userRepository = userRepository;
         this.toUserDTOConverter = toUserDTOConverter;
         this.toOrderDTOConverter = toOrderDTOConverter;
     }
@@ -39,7 +41,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDTO> findAll(int limit, int page) throws ServiceException {
         try {
-            List<User> listFromDao = daoUser.findAll(limit, page);
+            List<UserEntity> listFromDao = userRepository.findAll(limit, page);
             return listFromDao.stream().map(toUserDTOConverter)
                     .collect(Collectors.toList());
         } catch (DaoException e) {
@@ -50,7 +52,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<UserDTO> find(long id) throws ServiceException {
         try {
-            Optional<User> userFromDao = daoUser.find(id);
+            Optional<UserEntity> userFromDao = userRepository.find(id);
             return userFromDao.map(toUserDTOConverter);
         } catch (DaoException e) {
             throw new ServiceException("exception in dao");
@@ -60,7 +62,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<OrderDTO> findOrdersOfUser(long idUser, int limit, int page) throws ServiceException {
         try {
-            List<Order> listFromDao = daoOrder.findOrdersOfSpecificUser(idUser, limit, page);
+            List<OrderEntity> listFromDao = orderRepository.findOrdersOfSpecificUser(idUser, limit, page);
             return listFromDao.stream().map(toOrderDTOConverter)
                     .collect(Collectors.toList());
         } catch (DaoException e) {
@@ -72,7 +74,7 @@ public class UserServiceImpl implements UserService {
     public Optional<OrderDTO> findSpecificOrderOfUser(long idUser, long idOrder)
             throws ServiceException {
         try {
-            List<Order> listFromDao = daoOrder.findOrderOfSpecificUser(idUser, idOrder);
+            List<OrderEntity> listFromDao = orderRepository.findOrderOfSpecificUser(idUser, idOrder);
             return listFromDao.stream().map(toOrderDTOConverter)
                     .findFirst();
         } catch (DaoException e) {

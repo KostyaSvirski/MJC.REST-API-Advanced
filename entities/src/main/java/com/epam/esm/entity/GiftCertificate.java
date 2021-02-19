@@ -193,15 +193,6 @@ public class GiftCertificate {
             return this;
         }
 
-        public GiftCertificateBuilder buildListOfTags(List<TagDTO> tags) {
-            if (tags != null) {
-                newGiftCertificate.tagsDependsOnCertificate = tags.stream()
-                        .map(tag -> new TagDTOToTagEntityConverter().apply(tag))
-                        .collect(Collectors.toList());
-            }
-            return this;
-        }
-
         public GiftCertificate finishBuilding() {
             return newGiftCertificate;
         }

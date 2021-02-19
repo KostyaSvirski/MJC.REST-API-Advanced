@@ -1,12 +1,12 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.jdbc.OrderDao;
 import com.epam.esm.converter.OrderDTOToOrderEntityConverter;
 import com.epam.esm.converter.OrderEntityToOrderDTOConverter;
 import com.epam.esm.dto.OrderDTO;
-import com.epam.esm.entity.Order;
 import com.epam.esm.exception.DaoException;
 import com.epam.esm.exception.ServiceException;
+import com.epam.esm.hibernate.OrderRepository;
+import com.epam.esm.persistence.OrderEntity;
 import com.epam.esm.service.OrderService;
 import com.epam.esm.validator.PreparedValidatorChain;
 import com.epam.esm.validator.realisation.IntermediateOrderLink;
@@ -22,14 +22,14 @@ import java.util.stream.Collectors;
 @Service
 public class OrderServiceImpl implements OrderService {
 
-    private final OrderDao dao;
+    private final OrderRepository repository;
     private final OrderEntityToOrderDTOConverter toOrderDTOConverter;
     private final OrderDTOToOrderEntityConverter toOrderEntityConverter;
 
     @Autowired
-    public OrderServiceImpl(OrderDao dao, OrderEntityToOrderDTOConverter toOrderDTOConverter,
+    public OrderServiceImpl(OrderRepository repository, OrderEntityToOrderDTOConverter toOrderDTOConverter,
                             OrderDTOToOrderEntityConverter toOrderEntityConverter) {
-        this.dao = dao;
+        this.repository = repository;
         this.toOrderDTOConverter = toOrderDTOConverter;
         this.toOrderEntityConverter = toOrderEntityConverter;
     }
@@ -37,7 +37,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderDTO> findAll(int limit, int page) throws ServiceException {
         try {
-            List<Order> listFromDao = dao.findAll(limit, page);
+            List<OrderEntity> listFromDao = repository.findAll(limit, page);
             return listFromDao.stream().map(toOrderDTOConverter)
                     .collect(Collectors.toList());
         } catch (DaoException e) {
@@ -48,7 +48,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Optional<OrderDTO> find(long id) throws ServiceException {
         try {
-            Optional<Order> order = dao.find(id);
+            Optional<OrderEntity> order = repository.find(id);
             return order.map(toOrderDTOConverter);
         } catch (DaoException e) {
             throw new ServiceException("exception in dao");
@@ -62,7 +62,7 @@ public class OrderServiceImpl implements OrderService {
         chain.linkWith(new IdCertificateValidatorLink()).linkWith(new IdUserValidatorLink());
         if (chain.validate(newOrder)) {
             try {
-                return dao.create(toOrderEntityConverter.apply(newOrder));
+                return repository.create(toOrderEntityConverter.apply(newOrder));
             } catch (DaoException e) {
                 throw new ServiceException("exception in dao");
             }

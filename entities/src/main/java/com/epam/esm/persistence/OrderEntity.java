@@ -1,10 +1,6 @@
 package com.epam.esm.persistence;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,33 +8,29 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.sql.Timestamp;
 
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Builder
+@Getter
+@Setter
 @Table(name = "order_of_user")
 public class OrderEntity {
 
     @Column(name = "id_order")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
-    @Setter
     private long id;
-    @Getter
-    @Setter
     @Column(name = "id_user")
     private long idUser;
     @Column(name = "id_certificate")
-    @Getter
-    @Setter
     private long idCertificate;
-    @Getter
-    @Setter
     private long cost;
-    @Getter
-    @Setter
     private boolean closed;
+    @Column(name = "purchase_time")
+    private Timestamp purchaseTime;
 
 }
