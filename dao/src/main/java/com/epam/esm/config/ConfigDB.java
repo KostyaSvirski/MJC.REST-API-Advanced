@@ -36,13 +36,11 @@ public class ConfigDB {
     @Value("${hibernate.connection.characterEncoding}")
     private String characterEncoding;
     @Value("${hibernate.connection.pool_size}")
-    private String initialSize;
+    private int initialSize;
     @Value("${db.serverTimezone}")
     private String serverTimeZone;
     @Value("${hibernate.connection.useUnicode}")
     private String useUnicode;
-    @Value("${hibernate.current_session_context_class}")
-    private String contextClass;
     @Value("${hibernate.dialect}")
     private String dialect;
     @Value("${hibernate.show_sql}")
@@ -58,7 +56,7 @@ public class ConfigDB {
         dataSource.setUsername(userName);
         dataSource.setPassword(pass);
         dataSource.setMaxOpenPreparedStatements(maxOpenPreparedStatements);
-        dataSource.setInitialSize(Integer.parseInt(initialSize));
+        dataSource.setInitialSize(initialSize);
         dataSource.addConnectionProperty("characterEncoding", characterEncoding);
         dataSource.addConnectionProperty("autoReconnect", autoReconnect);
         dataSource.addConnectionProperty("serverTimezone", serverTimeZone);
@@ -76,27 +74,26 @@ public class ConfigDB {
         return factoryBean;
     }
 
-    private AbstractJpaVendorAdapter vendorAdapter() {
-        AbstractJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        vendorAdapter.setShowSql(Boolean.getBoolean(showSql));
-        vendorAdapter.setGenerateDdl(true);
-        return vendorAdapter;
-    }
-
-    private Properties jpaProperties() {
-        Properties propJpa = new Properties();
-        propJpa.put("hibernate.hbm2ddl.auto", auto);
-        propJpa.put("hibernate.show_sql", showSql);
-        propJpa.put("hibernate.current_session_context_class", contextClass);
-        propJpa.put("hibernate.dialect", dialect);
-        return propJpa;
-    }
-
     @Bean
     public PlatformTransactionManager transactionManager() {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(this.entityManagerFactory().getObject());
         return transactionManager;
 
+    }
+
+    private Properties jpaProperties() {
+        Properties propJpa = new Properties();
+        propJpa.put("hibernate.hbm2ddl.auto", auto);
+        propJpa.put("hibernate.show_sql", showSql);
+        propJpa.put("hibernate.dialect", dialect);
+        return propJpa;
+    }
+
+    private AbstractJpaVendorAdapter vendorAdapter() {
+        AbstractJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        vendorAdapter.setShowSql(Boolean.getBoolean(showSql));
+        vendorAdapter.setGenerateDdl(true);
+        return vendorAdapter;
     }
 }

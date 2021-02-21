@@ -20,12 +20,12 @@ public class TagRepositoryImpl implements TagRepository {
     private EntityManager em;
 
     @Override
-    public Optional<TagEntity> find(long id) throws DaoException {
+    public Optional<TagEntity> find(long id) {
         return Optional.ofNullable(em.find(TagEntity.class, id));
     }
 
     @Override
-    public List<TagEntity> findAll(int limit, int page) throws DaoException {
+    public List<TagEntity> findAll(int limit, int page) {
         return em.createQuery(HQL_FIND_ALL)
                 .setFirstResult((page - 1) * limit)
                 .setMaxResults(limit)
@@ -33,18 +33,14 @@ public class TagRepositoryImpl implements TagRepository {
     }
 
     @Override
-    public int create(TagEntity entity) throws DaoException {
+    public int create(TagEntity entity) {
         em.persist(entity);
         return (int) entity.getId();
     }
 
     @Override
-    public void delete(long id) throws DaoException {
-        try {
-            TagEntity tagToDelete = em.find(TagEntity.class, id);
-            em.remove(tagToDelete);
-        } catch (Throwable e) {
-            throw new DaoException(e.getMessage());
-        }
+    public void delete(long id) {
+        TagEntity tagToDelete = em.find(TagEntity.class, id);
+        em.remove(tagToDelete);
     }
 }

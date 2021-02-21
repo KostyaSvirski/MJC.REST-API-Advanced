@@ -20,8 +20,8 @@ public class GiftCertificateDTO extends RepresentationModel<GiftCertificateDTO> 
     private long id;
     private String name;
     private String description;
-    private Long price;
-    private Integer duration;
+    private long price;
+    private int duration;
     private String createDate;
     private String lastUpdateDate;
     @Autowired

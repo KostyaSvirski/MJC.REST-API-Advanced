@@ -15,8 +15,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,7 +34,7 @@ class TagRepositoryImplTest {
     private TagRepository repository;
 
     @BeforeEach
-    public void injectDefaultData() throws DaoException {
+    void createDefaultData() throws DaoException {
         for (int i = 0; i < 100; i++) {
             TagEntity tag = new TagEntity();
             tag.setName(PREFIX_NAME + i);
@@ -57,7 +55,7 @@ class TagRepositoryImplTest {
         cert.setLastUpdateDate(LocalDateTime.now());
         tag.addCertificate(cert);
         int newTagId = repository.create(tag);
-        assertEquals(101, newTagId);
+        assertTrue(newTagId > 0);
     }
 
     @Test
@@ -88,8 +86,8 @@ class TagRepositoryImplTest {
 
     @Test
     public void testDeleteTag() throws DaoException {
-        repository.delete(1);
-        Optional<TagEntity> result = repository.find(1);
+        repository.delete(100);
+        Optional<TagEntity> result = repository.find(100);
         assertFalse(result.isPresent());
     }
 
@@ -111,11 +109,11 @@ class TagRepositoryImplTest {
         assertEquals(limit, result.get(result.size() - 1).getId());
     }
 
-    @ParameterizedTest
-    @ValueSource(longs = {1, 101, 250, 380, 500})
-    public void testFindSpecificTag(long id) throws DaoException {
-        Optional<TagEntity> result = repository.find(id);
+
+    @Test
+    public void testFindSpecificTag() throws DaoException {
+        Optional<TagEntity> result = repository.find(1);
         assertTrue(result.isPresent());
-        assertEquals(id, result.get().getId());
+        assertEquals(1, result.get().getId());
     }
 }

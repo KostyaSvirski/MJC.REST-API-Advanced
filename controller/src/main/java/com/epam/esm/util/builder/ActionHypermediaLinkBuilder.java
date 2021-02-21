@@ -2,16 +2,18 @@ package com.epam.esm.util.builder;
 
 import com.epam.esm.contoller.GiftCertificateController;
 import com.epam.esm.contoller.OrderController;
+import com.epam.esm.contoller.TagController;
 import com.epam.esm.contoller.UserController;
 import com.epam.esm.dto.ActionHypermedia;
 import com.epam.esm.dto.GiftCertificateDTO;
 import com.epam.esm.dto.OrderDTO;
+import com.epam.esm.dto.TagDTO;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 
-public class ActionHypermediaLinkBuilder extends BuilderContainer<ActionHypermedia>{
+public class ActionHypermediaLinkBuilder extends BuilderContainer<ActionHypermedia> {
 
     public ActionHypermediaLinkBuilder(ActionHypermedia hypermedia) {
-       super(hypermedia);
+        super(hypermedia);
     }
 
     public ActionHypermediaLinkBuilder buildRetrieveAllCertificateSelfLink
@@ -61,14 +63,6 @@ public class ActionHypermediaLinkBuilder extends BuilderContainer<ActionHypermed
         hypermedia.add(WebMvcLinkBuilder
                 .linkTo(WebMvcLinkBuilder.methodOn(GiftCertificateController.class)
                         .updateCertificate(certificate, id))
-                .withSelfRel());
-        return this;
-    }
-
-    public ActionHypermediaLinkBuilder buildRetrieveAllOrdersSelfLink(int limit, int page) {
-        hypermedia.add(WebMvcLinkBuilder
-                .linkTo(WebMvcLinkBuilder.methodOn(OrderController.class)
-                        .retrieveAllOrders(limit, page))
                 .withSelfRel());
         return this;
     }
@@ -134,6 +128,46 @@ public class ActionHypermediaLinkBuilder extends BuilderContainer<ActionHypermed
                 .linkTo(WebMvcLinkBuilder.methodOn(UserController.class)
                         .retrieveSpecificUser(idUser))
                 .withRel("user"));
+        return this;
+    }
+
+    public ActionHypermediaLinkBuilder buildFindAllTagsSelfLink(int limit, int page) {
+        hypermedia.add(WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(TagController.class)
+                        .findAllTags(limit, page))
+                .withSelfRel());
+        return this;
+    }
+
+    public ActionHypermediaLinkBuilder buildFindSpecificTagSelfLink(long id) {
+        hypermedia.add(WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(TagController.class)
+                        .findSpecificTag(id))
+                .withSelfRel());
+        return this;
+    }
+
+    public ActionHypermediaLinkBuilder buildAddTagSelfLink(TagDTO newTag) {
+        hypermedia.add(WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(TagController.class)
+                        .addTag(newTag))
+                .withSelfRel());
+        return this;
+    }
+
+    public ActionHypermediaLinkBuilder buildDeleteTagSelfLink(long id) {
+        hypermedia.add(WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(TagController.class)
+                        .deleteTag(id))
+                .withSelfRel());
+        return this;
+    }
+
+    public ActionHypermediaLinkBuilder buildFindAllTagsLink(int limit, int page) {
+        hypermedia.add(WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(TagController.class)
+                        .findAllTags(limit, page))
+                .withRel("tags"));
         return this;
     }
 }

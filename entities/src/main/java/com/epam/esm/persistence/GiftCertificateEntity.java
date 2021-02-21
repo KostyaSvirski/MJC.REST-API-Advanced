@@ -8,14 +8,11 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-@Builder
+@Entity
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = "tagsDependsOnCertificate")
-@Getter
-@Setter
-@ToString(exclude = "tagsDependsOnCertificate")
-@Entity
+@Builder
 @Table(name = "gift_certificate")
 public class GiftCertificateEntity {
 
@@ -44,6 +41,8 @@ public class GiftCertificateEntity {
             inverseJoinColumns = {@JoinColumn(name = "id_tag")}
     )
     @Builder.Default
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<TagEntity> tagsDependsOnCertificate = new HashSet<>();
 
     public void addTag(TagEntity tag) {

@@ -22,9 +22,9 @@ import java.util.stream.Collectors;
 @Service
 public class OrderServiceImpl implements OrderService {
 
-    private final OrderRepository repository;
-    private final OrderEntityToOrderDTOConverter toOrderDTOConverter;
-    private final OrderDTOToOrderEntityConverter toOrderEntityConverter;
+    private OrderRepository repository;
+    private OrderEntityToOrderDTOConverter toOrderDTOConverter;
+    private OrderDTOToOrderEntityConverter toOrderEntityConverter;
 
     @Autowired
     public OrderServiceImpl(OrderRepository repository, OrderEntityToOrderDTOConverter toOrderDTOConverter,
@@ -41,7 +41,7 @@ public class OrderServiceImpl implements OrderService {
             return listFromDao.stream().map(toOrderDTOConverter)
                     .collect(Collectors.toList());
         } catch (DaoException e) {
-            throw new ServiceException("exception in dao");
+            throw new ServiceException(e.getCause());
         }
     }
 
@@ -51,7 +51,7 @@ public class OrderServiceImpl implements OrderService {
             Optional<OrderEntity> order = repository.find(id);
             return order.map(toOrderDTOConverter);
         } catch (DaoException e) {
-            throw new ServiceException("exception in dao");
+            throw new ServiceException(e.getCause());
         }
 
     }
@@ -64,7 +64,7 @@ public class OrderServiceImpl implements OrderService {
             try {
                 return repository.create(toOrderEntityConverter.apply(newOrder));
             } catch (DaoException e) {
-                throw new ServiceException("exception in dao");
+                throw new ServiceException(e.getCause());
             }
         }
         return 0;

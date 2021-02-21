@@ -8,13 +8,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class DurationValidatorLinkTest {
 
     private DurationValidatorLink validator = new DurationValidatorLink();
-    private String[] paramsToCheck = {"P1Y2M3D", "P12Y3M0D", "P123Y2M3D", "P1234Y2M3D", "P0Y21M3D", "P123Y22M33D"};
-    private String[] incParamsToCheck = {"", "P2M3D", "1Y2M3D", "P1Y2M3D     ", "    P123Y2M3D",
-            "P1Y2M3daD", "P1Y2M3d"};
+    private int[] paramsToCheck = {1, 2, 3, 4, 5};
+    private int[] incParamsToCheck = {-1};
 
     @Test
     public void testValidation() {
-        for(String param : paramsToCheck) {
+        for(int param : paramsToCheck) {
             GiftCertificateDTO certificate = new GiftCertificateDTO();
             certificate.setDuration(param);
             assertTrue(validator.validate(certificate));
@@ -23,7 +22,7 @@ class DurationValidatorLinkTest {
 
     @Test
     public void testValidationIncParams() {
-        for(String param : incParamsToCheck) {
+        for(int param : incParamsToCheck) {
             GiftCertificateDTO certificate = new GiftCertificateDTO();
             certificate.setDuration(param);
             assertFalse(validator.validate(certificate));

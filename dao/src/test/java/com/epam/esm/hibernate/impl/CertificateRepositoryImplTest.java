@@ -5,6 +5,7 @@ import com.epam.esm.exception.DaoException;
 import com.epam.esm.hibernate.CertificateRepository;
 import com.epam.esm.persistence.GiftCertificateEntity;
 import com.epam.esm.persistence.TagEntity;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,15 +14,17 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(
@@ -46,6 +49,19 @@ class CertificateRepositoryImplTest {
             tag.setName("tag " + i);
             cert.addTag(tag);
             repository.create(cert);
+        }
+    }
+
+    @AfterEach
+    public void deleteDefaultData() throws DaoException {
+        int i = 1;
+        while (true) {
+            if (repository.find(i).isPresent()) {
+                repository.delete(i);
+                i++;
+            } else {
+                break;
+            }
         }
     }
 
@@ -106,7 +122,7 @@ class CertificateRepositoryImplTest {
         newTag.setName("tag new ");
         cert.removeTag(tag);
         cert.addTag(newTag);
-        repository.update(cert, result);
+        repository.update(cert);
         GiftCertificateEntity certFromRepo = repository.find(101).get();
         assertEquals(certFromRepo.getId(), result);
         assertEquals(certFromRepo.getName(), "new name");
@@ -124,9 +140,9 @@ class CertificateRepositoryImplTest {
     @Test
     void testFindAllCerts() throws DaoException {
         List<GiftCertificateEntity> list = repository.findAll(10, 1);
-        assertEquals(list.size(), 10);
+        assertEquals(10, list.size());
         assertEquals(1, list.get(0).getId());
-        assertEquals(10, list.get(list.size()-1).getId());
+        assertEquals(10, list.get(list.size() - 1).getId());
     }
 
     @Test
@@ -150,7 +166,7 @@ class CertificateRepositoryImplTest {
                 .sortCertificatesByName("desc", 10, 1);
         assertEquals(10, entities.size());
         assertEquals("name 99", entities.get(0).getName());
-        assertEquals("name 90", entities.get(entities.size()-1).getName());
+        assertEquals("name 90", entities.get(entities.size() - 1).getName());
     }
 
     @Test
@@ -179,7 +195,7 @@ class CertificateRepositoryImplTest {
 
     @Test
     public void testRetrieveSortedByDateCertsException() throws DaoException {
-        assertThrows(DaoException.class, () -> repository
+        assertThrows(IllegalArgumentException.class, () -> repository
                 .sortCertificatesByCreateDate("awef", 10, 1));
     }
 }

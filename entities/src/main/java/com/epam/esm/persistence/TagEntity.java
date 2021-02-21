@@ -14,14 +14,11 @@ import javax.persistence.Table;
 import java.util.HashSet;
 import java.util.Set;
 
-@EqualsAndHashCode(exclude = "certificateEntitySet")
-@ToString(exclude = "certificateEntitySet")
-@Getter
-@Setter
-@Builder
+@Entity
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
+@Builder
 @Table(name = "tag_for_certificates")
 public class TagEntity {
 
@@ -37,6 +34,8 @@ public class TagEntity {
                     CascadeType.REFRESH,
                     CascadeType.REMOVE}, mappedBy = "tagsDependsOnCertificate")
     @Builder.Default
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<GiftCertificateEntity> certificateEntitySet = new HashSet<>();
 
     public void addCertificate(GiftCertificateEntity cert) {

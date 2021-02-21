@@ -1,6 +1,7 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.jdbc.GiftCertificateDao;
+import com.epam.esm.hibernate.CertificateRepository;
+import com.epam.esm.hibernate.impl.CertificateRepositoryImpl;
 import com.epam.esm.config.ServiceConfig;
 import com.epam.esm.converter.GiftCertificateDTOToEntityConverter;
 import com.epam.esm.converter.GiftCertificateEntityToDTOConverter;
@@ -9,7 +10,7 @@ import com.epam.esm.dto.TagDTO;
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.exception.DaoException;
 import com.epam.esm.exception.ServiceException;
-import com.epam.esm.jdbc.impl.CertificateDaoImpl;
+import com.epam.esm.persistence.GiftCertificateEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,10 +25,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -39,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class GiftCertificateServiceImplTest {
 
     @Mock
-    private final GiftCertificateDao dao = Mockito.mock(CertificateDaoImpl.class);
+    private final CertificateRepository repository = Mockito.mock(CertificateRepositoryImpl.class);
     @Mock
     private final GiftCertificateEntityToDTOConverter entityToDTOConverter =
             Mockito.mock(GiftCertificateEntityToDTOConverter.class);
@@ -56,27 +54,34 @@ class GiftCertificateServiceImplTest {
 
     @Test
     public void testFindAll() throws DaoException, ServiceException {
-        List<GiftCertificate> resultList = new ArrayList<>();
-        resultList.add(new GiftCertificate(1));
-        Mockito.when(dao.findAll(Mockito.anyInt(), Mockito.anyInt())).thenReturn(resultList);
-        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO(1));
-        assertNotNull(service.findAll(1, 5));
+        GiftCertificateEntity entity = new GiftCertificateEntity();
+        entity.setId(1);
+        List<GiftCertificateEntity> resultList = new ArrayList<>();
+        resultList.add(entity);
+        Mockito.when(repository.findAll(Mockito.anyInt(), Mockito.anyInt())).thenReturn(resultList);
+        GiftCertificateDTO dto = new GiftCertificateDTO();
+        dto.setId(1);
+        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(dto);
+        assertNotNull(service.findAll(1, 1));
     }
 
     @ParameterizedTest
     @ValueSource(longs = {1, 2, 3, 4, 5})
     public void testFindSpecificCert(long id) throws DaoException, ServiceException {
-        List<GiftCertificate> resultList = new ArrayList<>();
-        resultList.add(new GiftCertificate(id));
-        Mockito.when(dao.find(id)).thenReturn(resultList);
-        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO(id));
-        assertEquals(service.find(id), Optional.of(new GiftCertificateDTO(id)));
+        GiftCertificateEntity entity = new GiftCertificateEntity();
+        entity.setId(id);
+        Optional<GiftCertificateEntity> certWrapper = Optional.of(entity);
+        Mockito.when(repository.find(id)).thenReturn(certWrapper);
+        GiftCertificateDTO dto = new GiftCertificateDTO();
+        dto.setId(id);
+        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(dto);
+        assertEquals(service.find(id), Optional.of(dto));
     }
 
     @Test
     public void testFindNotExistingCert() throws DaoException, ServiceException {
-        Mockito.when(dao.find(Mockito.anyLong()))
-                .thenReturn(Collections.emptyList());
+        Mockito.when(repository.find(Mockito.anyLong()))
+                .thenReturn(Optional.empty());
         Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(null);
         assertEquals(service.find(Mockito.anyLong()), Optional.empty());
     }
@@ -85,49 +90,50 @@ class GiftCertificateServiceImplTest {
     public void testCreate() throws DaoException, ServiceException {
         GiftCertificateDTO certDTO = new GiftCertificateDTO();
         certDTO.setName("aaaa");
-        certDTO.setPrice(100);
+        certDTO.setPrice(100L);
         certDTO.setCreateDate(Instant.now().toString());
         certDTO.setLastUpdateDate(Instant.now().toString());
-        certDTO.setDuration("P0Y10M11D");
-        certDTO.setTags(Collections.singletonList(new TagDTO(1, "name")));
-        Mockito.when(dao.create(Mockito.any())).thenReturn(7);
+        certDTO.setDuration(1);
+        TagDTO dto = TagDTO.builder().id(1L).build();
+        Set<TagDTO> setTag = new HashSet<>();
+        setTag.add(dto);
+        certDTO.setTags(setTag);
+        Mockito.when(repository.create(Mockito.any())).thenReturn(7);
         int actual = service.create(certDTO);
         assertEquals(actual, 7);
     }
 
-
-    // FIXME: 05.02.2021 not throws
     @Test
     public void testUpdate() throws DaoException {
         GiftCertificateDTO certDTO = new GiftCertificateDTO();
         certDTO.setName("aaaa");
         certDTO.setPrice(100);
-        Mockito.doThrow(new DaoException()).when(dao).update(Mockito.any(), Mockito.eq(1));
-        Mockito.when(dtoToEntityConverter.apply(certDTO)).thenReturn(new GiftCertificate());
-        Throwable thrown = assertThrows(ServiceException.class, () -> service.update(certDTO, 1));
-        assertNotNull(thrown);
+        Mockito.doThrow(new DaoException()).when(repository).update(Mockito.any());
+        assertThrows(ServiceException.class, () -> service.update(certDTO, 1));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"asc", "desc"})
     public void testSortingMethod(String method) throws DaoException, ServiceException {
-        List<GiftCertificate> resultList = new ArrayList<>();
-        resultList.add(new GiftCertificate(1));
-        Mockito.when(dao.sortCertificates(Mockito.any(), Mockito.eq(method), Mockito.anyInt(), Mockito.anyInt()))
+        List<GiftCertificateEntity> resultList = new ArrayList<>();
+        resultList.add(new GiftCertificateEntity().builder().id(1).build());
+        Mockito.when(repository.sortCertificatesByName(Mockito.eq(method), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(resultList);
-        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO(1));
+        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO().builder().id(1)
+                .build());
         List<GiftCertificateDTO> actual = service.sortByField("name_of_certificate", method, 1, 1);
-        assertEquals(Collections.singletonList(new GiftCertificateDTO(1)), actual);
+        assertEquals(Collections.singletonList(new GiftCertificateDTO().builder().id(1).build()), actual);
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"ask", "desk"})
     public void testSortingIncMethod(String method) throws DaoException, ServiceException {
-        List<GiftCertificate> resultList = new ArrayList<>();
-        resultList.add(new GiftCertificate(1));
-        Mockito.when(dao.sortCertificates(Mockito.any(), Mockito.eq(method), Mockito.anyInt(), Mockito.anyInt()))
+        List<GiftCertificateEntity> resultList = new ArrayList<>();
+        resultList.add(new GiftCertificateEntity().builder().id(1).build());
+        Mockito.when(repository.sortCertificatesByName(Mockito.eq(method), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(resultList);
-        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO(1));
+        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO().builder().id(1)
+                .build());
         List<GiftCertificateDTO> actual = service.sortByField("name_of_certificate", method, 1, 1);
         assertEquals(Collections.emptyList(), actual);
     }
@@ -135,32 +141,35 @@ class GiftCertificateServiceImplTest {
     @ParameterizedTest
     @ValueSource(strings = {"name_of_certificate", "create_date"})
     public void testSortingField(String field) throws DaoException, ServiceException {
-        List<GiftCertificate> resultList = new ArrayList<>();
-        resultList.add(new GiftCertificate(1));
-        Mockito.when(dao.sortCertificates(Mockito.eq(field), Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
+        List<GiftCertificateEntity> resultList = new ArrayList<>();
+        resultList.add(new GiftCertificateEntity().builder().id(1).build());
+        Mockito.when(repository.sortCertificatesByName(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(resultList);
-        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO(1));
+        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO().builder().id(1)
+                .build());
         List<GiftCertificateDTO> actual = service.sortByField(field, "asc", 1, 1);
-        assertEquals(Collections.singletonList(new GiftCertificateDTO(1)), actual);
+        assertEquals(Collections.singletonList(new GiftCertificateDTO().builder().id(1).build()), actual);
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"description", "price"})
     public void testSortingIncField(String field) throws DaoException, ServiceException {
-        List<GiftCertificate> resultList = new ArrayList<>();
-        resultList.add(new GiftCertificate(1));
-        Mockito.when(dao.sortCertificates(Mockito.eq(field), Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
+        List<GiftCertificateEntity> resultList = new ArrayList<>();
+        resultList.add(new GiftCertificateEntity().builder().id(1).build());
+        Mockito.when(repository.sortCertificatesByName(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(resultList);
-        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO(1));
+        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO().builder().id(1)
+                .build());
         List<GiftCertificateDTO> actual = service.sortByField(field, "asc", 1, 1);
         assertEquals(Collections.emptyList(), actual);
     }
 
     @Test
     public void testExceptionSort() throws DaoException {
-        Mockito.when(dao.sortCertificates(Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
+        Mockito.when(repository.sortCertificatesByName(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenThrow(new DaoException());
-        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO(1));
+        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO().builder().id(1)
+                .build());
         Throwable throwable = assertThrows(ServiceException.class, () -> service.sortByField("create_date",
                 "asc", 1, 1));
         String expected = "exception in dao";
@@ -170,38 +179,41 @@ class GiftCertificateServiceImplTest {
 
     @Test
     public void testFindByPartOfDescription() throws DaoException, ServiceException {
-        List<GiftCertificate> resultList = new ArrayList<>();
-        resultList.add(new GiftCertificate(1));
-        Mockito.when(dao.searchByDescription(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
+        List<GiftCertificateEntity> resultList = new ArrayList<>();
+        resultList.add(new GiftCertificateEntity().builder().id(1).build());
+        Mockito.when(repository.searchByDescription(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(resultList);
-        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO(1));
+        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO().builder().id(1)
+                .build());
         List<GiftCertificateDTO> actual = service.findByPartOfDescription
                 (Mockito.any(), Mockito.anyInt(), Mockito.anyInt());
-        assertEquals(Collections.singletonList(new GiftCertificateDTO(1)), actual);
+        assertEquals(Collections.singletonList(new GiftCertificateDTO().builder().id(1).build()), actual);
     }
 
     @Test
     public void testFindByPartOfName() throws DaoException, ServiceException {
-        List<GiftCertificate> resultList = new ArrayList<>();
-        resultList.add(new GiftCertificate(1));
-        Mockito.when(dao.searchByName(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
+        List<GiftCertificateEntity> resultList = new ArrayList<>();
+        resultList.add(new GiftCertificateEntity().builder().id(1).build());
+        Mockito.when(repository.searchByName(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(resultList);
-        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO(1));
+        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO().builder().id(1)
+                .build());
         List<GiftCertificateDTO> actual = service.findByPartOfName
                 (Mockito.any(), Mockito.anyInt(), Mockito.anyInt());
-        assertEquals(Collections.singletonList(new GiftCertificateDTO(1)), actual);
+        assertEquals(Collections.singletonList(new GiftCertificateDTO().builder().id(1).build()), actual);
     }
 
     @Test
     public void testFindByTagName() throws DaoException, ServiceException {
-        List<GiftCertificate> resultList = new ArrayList<>();
-        resultList.add(new GiftCertificate(1));
-        Mockito.when(dao.searchByTag(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
+        List<GiftCertificateEntity> resultList = new ArrayList<>();
+        resultList.add(new GiftCertificateEntity().builder().id(1).build());
+        Mockito.when(repository.searchByTag(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(resultList);
-        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO(1));
+        Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO().builder().id(1)
+                .build());
         List<GiftCertificateDTO> actual = service.findByTag
                 (Mockito.any(), Mockito.anyInt(), Mockito.anyInt());
-        assertEquals(Collections.singletonList(new GiftCertificateDTO(1)), actual);
+        assertEquals(Collections.singletonList(new GiftCertificateDTO().builder().id(1).build()), actual);
     }
 
 }

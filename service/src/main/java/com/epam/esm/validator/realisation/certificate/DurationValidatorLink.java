@@ -7,7 +7,7 @@ public class DurationValidatorLink extends IntermediateCertificateLink {
 
     @Override
     public boolean validate(GiftCertificateDTO bean) {
-        if (bean.getDuration() == null) {
+        if (bean.getDuration() == 0) {
             return checkNextLink(bean);
         }
         if (bean.getDuration() < 0) {

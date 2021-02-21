@@ -1,14 +1,14 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.jdbc.TagDao;
+import com.epam.esm.hibernate.TagRepository;
+import com.epam.esm.hibernate.impl.TagRepositoryImpl;
 import com.epam.esm.config.ServiceConfig;
 import com.epam.esm.converter.TagDTOToTagEntityConverter;
 import com.epam.esm.converter.TagEntityToTagDTOConverter;
 import com.epam.esm.dto.TagDTO;
-import com.epam.esm.entity.Tag;
 import com.epam.esm.exception.DaoException;
 import com.epam.esm.exception.ServiceException;
-import com.epam.esm.jdbc.impl.TagDaoImpl;
+import com.epam.esm.persistence.TagEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class TagServiceImplTest {
 
     @Mock
-    private final TagDao dao = Mockito.mock(TagDaoImpl.class);
+    private final TagRepository repository = Mockito.mock(TagRepositoryImpl.class);
     @Mock
     private final TagDTOToTagEntityConverter converterToEntity = Mockito.mock(TagDTOToTagEntityConverter.class);
     @Mock
@@ -52,16 +52,16 @@ class TagServiceImplTest {
     @ValueSource(longs = {1, 2, 3, 4})
     public void testCreate(long id) throws DaoException, ServiceException {
         TagDTO tag = new TagDTO(id, "gg");
-        Mockito.when(converterToEntity.apply(tag)).thenReturn(new Tag(id));
-        Mockito.when(dao.create(Mockito.any())).thenReturn((int) id);
+        Mockito.when(converterToEntity.apply(tag)).thenReturn(new TagEntity().builder().id(id).build());
+        Mockito.when(repository.create(Mockito.any())).thenReturn((int) id);
         int actual = service.create(tag);
         assertEquals(id, actual);
     }
 
     @Test
     public void testFindAll() throws DaoException, ServiceException {
-        Mockito.when(dao.findAll(Mockito.anyInt(), Mockito.anyInt()))
-                .thenReturn(Collections.singletonList(new Tag(1)));
+        Mockito.when(repository.findAll(Mockito.anyInt(), Mockito.anyInt()))
+                .thenReturn(Collections.singletonList(new TagEntity().builder().id(1).build()));
         Mockito.when(converterToDTO.apply(Mockito.any())).thenReturn(new TagDTO());
         List<TagDTO> actual = service.findAll(Mockito.anyInt(), Mockito.anyInt());
         assertEquals(Collections.singletonList(new TagDTO()), actual);
@@ -69,7 +69,7 @@ class TagServiceImplTest {
 
     @Test
     public void testFindAllException() throws DaoException {
-        Mockito.when(dao.findAll(Mockito.anyInt(), Mockito.anyInt())).thenThrow(new DaoException());
+        Mockito.when(repository.findAll(Mockito.anyInt(), Mockito.anyInt())).thenThrow(new DaoException());
         Throwable throwable = assertThrows(ServiceException.class,
                 () -> service.findAll(Mockito.anyInt(), Mockito.anyInt()));
         String expected = "exception in dao";
@@ -79,17 +79,16 @@ class TagServiceImplTest {
     @ParameterizedTest
     @ValueSource(longs = {1, 2, 3, 4})
     public void testFindSpecificTag(long id) throws DaoException, ServiceException {
-        Mockito.when(dao.find(Mockito.eq(id)))
-                .thenReturn(Collections.singletonList(new Tag(id)));
-        Mockito.when(converterToDTO.apply(Mockito.any())).thenReturn(new TagDTO(id));
+        Mockito.when(repository.find(Mockito.eq(id)))
+                .thenReturn(Optional.of(new TagEntity().builder().id(id).build()));
+        Mockito.when(converterToDTO.apply(Mockito.any())).thenReturn(new TagDTO().builder().id(id).build());
         Optional<TagDTO> actual = service.find(id);
-        assertEquals(Optional.of(new TagDTO(id)), actual);
+        assertEquals(Optional.of(new TagDTO().builder().id(id).build()), actual);
     }
 
     @Test
     public void testFindSpecificTagNotFound() throws DaoException, ServiceException {
-        Mockito.when(dao.find(Mockito.anyLong()))
-                .thenReturn(Collections.emptyList());
+        Mockito.when(repository.find(Mockito.anyLong())).thenReturn(Optional.empty());
         Optional<TagDTO> actual = service.find(Mockito.anyLong());
         assertEquals(Optional.empty(), actual);
     }
@@ -98,6 +97,6 @@ class TagServiceImplTest {
     @ParameterizedTest
     @ValueSource(longs = {1, 3, 6})
     public void testDelete(long id) throws DaoException {
-        Mockito.doNothing().when(dao).delete(id);
+        Mockito.doNothing().when(repository).delete(id);
     }
 }

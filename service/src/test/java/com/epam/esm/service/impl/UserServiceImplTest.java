@@ -1,5 +1,9 @@
 package com.epam.esm.service.impl;
 
+import com.epam.esm.hibernate.OrderRepository;
+import com.epam.esm.hibernate.UserRepository;
+import com.epam.esm.hibernate.impl.OrderRepositoryImpl;
+import com.epam.esm.hibernate.impl.UserRepositoryImpl;
 import com.epam.esm.jdbc.OrderDao;
 import com.epam.esm.jdbc.UserDao;
 import com.epam.esm.config.ServiceConfig;
@@ -13,6 +17,8 @@ import com.epam.esm.exception.DaoException;
 import com.epam.esm.exception.ServiceException;
 import com.epam.esm.jdbc.impl.OrderDaoImpl;
 import com.epam.esm.jdbc.impl.UserDaoImpl;
+import com.epam.esm.persistence.OrderEntity;
+import com.epam.esm.persistence.UserEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,9 +45,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class UserServiceImplTest {
 
     @Mock
-    private final OrderDao daoOrder = Mockito.mock(OrderDaoImpl.class);
+    private final OrderRepository daoOrder = Mockito.mock(OrderRepositoryImpl.class);
     @Mock
-    private final UserDao daoUser = Mockito.mock(UserDaoImpl.class);
+    private final UserRepository daoUser = Mockito.mock(UserRepositoryImpl.class);
     @Mock
     private final UserEntityToUserDTOConverter toUserDTOConverter =
             Mockito.mock(UserEntityToUserDTOConverter.class);
@@ -59,10 +65,10 @@ class UserServiceImplTest {
     @Test
     public void testFindAll() throws DaoException, ServiceException {
         Mockito.when(daoUser.findAll(Mockito.anyInt(), Mockito.anyInt()))
-                .thenReturn(Collections.singletonList(new User(1)));
-        Mockito.when(toUserDTOConverter.apply(Mockito.any())).thenReturn(new UserDTO(1));
+                .thenReturn(Collections.singletonList(new UserEntity().builder().id(1).build()));
+        Mockito.when(toUserDTOConverter.apply(Mockito.any())).thenReturn(new UserDTO().builder().id(1).build());
         List<UserDTO> actual = service.findAll(Mockito.anyInt(), Mockito.anyInt());
-        assertEquals(Collections.singletonList(new UserDTO(1)), actual);
+        assertEquals(Collections.singletonList(new UserDTO().builder().id(1).build()), actual);
     }
 
     @Test
@@ -78,26 +84,25 @@ class UserServiceImplTest {
     @ValueSource(longs = {1, 2, 3, 4})
     public void testFindSpecificUser(long id) throws DaoException, ServiceException {
         Mockito.when(daoUser.find(Mockito.eq(id)))
-                .thenReturn(Collections.singletonList(new User(id)));
-        Mockito.when(toUserDTOConverter.apply(Mockito.any())).thenReturn(new UserDTO(id));
+                .thenReturn(Optional.of(new UserEntity().builder().id(id).build()));
+        Mockito.when(toUserDTOConverter.apply(Mockito.any())).thenReturn(new UserDTO().builder().id(1).build());
         Optional<UserDTO> actual = service.find(id);
-        assertEquals(Optional.of(new UserDTO(id)), actual);
+        assertEquals(Optional.of(new UserDTO().builder().id(1).build()), actual);
     }
 
     @Test
     public void testFindSpecificUserNotFound() throws DaoException, ServiceException {
-        Mockito.when(daoUser.find(Mockito.anyLong())).thenReturn(Collections.emptyList());
+        Mockito.when(daoUser.find(Mockito.anyLong())).thenReturn(Optional.empty());
         Optional<UserDTO> actual = service.find(Mockito.anyLong());
         assertEquals(Optional.empty(), actual);
     }
 
-    // FIXME: 05.02.2021
     @ParameterizedTest
     @ValueSource(longs = {1, 2, 3, 4})
     public void testFindOrdersOfUser(long id) throws DaoException, ServiceException {
         OrderDTO dto = new OrderDTO();
         dto.setIdUser(id);
-        Order entity = new Order();
+        OrderEntity entity = new OrderEntity();
         entity.setIdUser(id);
         Mockito.when(daoOrder.findOrdersOfSpecificUser(Mockito.eq(id), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(Collections.singletonList(entity));
@@ -109,7 +114,7 @@ class UserServiceImplTest {
     @Test
     public void testFindSpecificOrderOfUser() throws DaoException, ServiceException {
         Mockito.when(daoOrder.findOrderOfSpecificUser(Mockito.anyLong(), Mockito.anyLong()))
-                .thenReturn(Collections.singletonList(new Order()));
+                .thenReturn(Collections.singletonList(new OrderEntity()));
         Mockito.when(toOrderDTOConverter.apply(Mockito.any())).thenReturn(new OrderDTO());
         Optional<OrderDTO> actual = service.findSpecificOrderOfUser(Mockito.anyLong(), Mockito.anyLong());
         assertEquals(Optional.of(new OrderDTO()), actual);

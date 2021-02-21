@@ -16,7 +16,7 @@ public interface CertificateRepository extends Repository<GiftCertificateEntity>
     void delete(long id) throws DaoException;
 
     @Transactional
-    void update(GiftCertificateEntity certificateForUpdate, long id) throws DaoException;
+    void update(GiftCertificateEntity certificateForUpdate) throws DaoException;
 
     List<GiftCertificateEntity> sortCertificatesByName(String method, int limit, int page)
             throws DaoException;

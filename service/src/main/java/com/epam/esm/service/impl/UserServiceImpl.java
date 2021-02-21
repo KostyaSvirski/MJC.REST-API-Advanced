@@ -4,8 +4,6 @@ import com.epam.esm.converter.OrderEntityToOrderDTOConverter;
 import com.epam.esm.converter.UserEntityToUserDTOConverter;
 import com.epam.esm.dto.OrderDTO;
 import com.epam.esm.dto.UserDTO;
-import com.epam.esm.entity.Order;
-import com.epam.esm.entity.User;
 import com.epam.esm.exception.DaoException;
 import com.epam.esm.exception.ServiceException;
 import com.epam.esm.hibernate.OrderRepository;
@@ -45,7 +43,7 @@ public class UserServiceImpl implements UserService {
             return listFromDao.stream().map(toUserDTOConverter)
                     .collect(Collectors.toList());
         } catch (DaoException e) {
-            throw new ServiceException("exception in dao");
+            throw new ServiceException(e.getCause());
         }
     }
 
@@ -55,7 +53,7 @@ public class UserServiceImpl implements UserService {
             Optional<UserEntity> userFromDao = userRepository.find(id);
             return userFromDao.map(toUserDTOConverter);
         } catch (DaoException e) {
-            throw new ServiceException("exception in dao");
+            throw new ServiceException(e.getCause());
         }
     }
 
@@ -66,7 +64,7 @@ public class UserServiceImpl implements UserService {
             return listFromDao.stream().map(toOrderDTOConverter)
                     .collect(Collectors.toList());
         } catch (DaoException e) {
-            throw new ServiceException("exception in dao");
+            throw new ServiceException(e.getCause());
         }
     }
 
@@ -78,7 +76,7 @@ public class UserServiceImpl implements UserService {
             return listFromDao.stream().map(toOrderDTOConverter)
                     .findFirst();
         } catch (DaoException e) {
-            throw new ServiceException("exception in dao");
+            throw new ServiceException(e.getCause());
         }
     }
 }

@@ -28,7 +28,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public List<OrderEntity> findAll(int limit, int page) throws DaoException {
+    public List<OrderEntity> findAll(int limit, int page) {
         List orders = em.createQuery(HQL_FIND_ALL)
                 .setFirstResult((page - 1) * limit)
                 .setMaxResults(limit)
@@ -47,7 +47,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public int create(OrderEntity newOrder) throws DaoException {
+    public int create(OrderEntity newOrder) {
         em.persist(newOrder);
         int idNewOrder = (int) newOrder.getId();
         return idNewOrder;

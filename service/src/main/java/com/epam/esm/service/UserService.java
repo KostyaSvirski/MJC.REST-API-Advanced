@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface UserService extends BaseService<UserDTO> {
 
     List<OrderDTO> findOrdersOfUser(long idUser, int limit, int page) throws ServiceException;
-    Optional<OrderDTO> findSpecificOrderOfUser (long idUser, long idOrder) throws ServiceException;
+
+    Optional<OrderDTO> findSpecificOrderOfUser(long idUser, long idOrder) throws ServiceException;
 
 }

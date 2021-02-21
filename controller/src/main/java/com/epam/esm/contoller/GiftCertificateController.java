@@ -9,7 +9,6 @@ import com.epam.esm.util.builder.ActionHypermediaLinkBuilder;
 import com.epam.esm.util.builder.CertificateLinkBuilder;
 import com.epam.esm.util.builder.CreateHypermediaLinkBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +23,7 @@ public class GiftCertificateController {
 
     private static final String DEFAULT_LIMIT = "5";
     private static final String DEFAULT_PAGE = "1";
+    private static final String ERROR_MESSAGE = "error";
 
     @Autowired
     private GiftCertificateService service;
@@ -51,10 +51,8 @@ public class GiftCertificateController {
                 results = service.findAll(limit, page);
             }
             if (results == null || results.isEmpty()) {
-                ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
-                        (new ActionHypermedia("not found"));
-                builder.buildRetrieveAllCertificateSelfLink(limit, page, partOfName, partOfDescription, nameOfTag,
-                        field, method);
+                ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia("not found"));
+                builder.buildRetrieveAllCertificateSelfLink(limit, page, partOfName, partOfDescription, nameOfTag, field, method);
                 return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.NOT_FOUND);
             }
             for (int i = 0; i < results.size(); i++) {
@@ -64,8 +62,7 @@ public class GiftCertificateController {
             }
             return new ResponseEntity<>(results, HttpStatus.OK);
         } catch (ServiceException e) {
-            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
-                    (new ActionHypermedia(e.getMessage()));
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(ERROR_MESSAGE));
             builder.buildRetrieveAllCertificateSelfLink(limit, page, partOfName, partOfDescription, nameOfTag,
                     field, method);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -79,12 +76,10 @@ public class GiftCertificateController {
             result = service.find(id);
             return result
                     .map(certificateDTO -> new ResponseEntity<>(certificateDTO, HttpStatus.OK))
-                    .orElseGet(() -> new ResponseEntity(new ActionHypermedia
-                            ("certificate with id " + id + "not found"),
+                    .orElseGet(() -> new ResponseEntity(new ActionHypermedia("certificate with id " + id + "not found"),
                             HttpStatus.NOT_FOUND));
         } catch (ServiceException e) {
-            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
-                    (new ActionHypermedia(e.getMessage()));
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(ERROR_MESSAGE));
             builder.buildRetrieveSpecificCertificateSelfLink(id);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -97,19 +92,16 @@ public class GiftCertificateController {
         try {
             int result = service.create(certificateDTO);
             if (result != 0) {
-                CreateHypermediaLinkBuilder builder = new CreateHypermediaLinkBuilder
-                        (new CreateActionHypermedia(result));
+                CreateHypermediaLinkBuilder builder = new CreateHypermediaLinkBuilder(new CreateActionHypermedia(result));
                 builder.buildNewCertificateLink(result);
                 return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.CREATED);
             } else {
-                ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
-                        (new ActionHypermedia("not valid data"));
+                ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia("not valid data"));
                 builder.buildCreateCertificateSelfLink(certificateDTO);
                 return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.BAD_REQUEST);
             }
         } catch (ServiceException e) {
-            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
-                    (new ActionHypermedia(e.getMessage()));
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(ERROR_MESSAGE));
             builder.buildCreateCertificateSelfLink(certificateDTO);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -122,12 +114,10 @@ public class GiftCertificateController {
             return new ResponseEntity<>(new ActionHypermedia("certificate with id " + id + " deleted"),
                     HttpStatus.OK);
         } catch (ServiceException e) {
-            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
-                    (new ActionHypermedia(e.getMessage()));
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(ERROR_MESSAGE));
             builder.buildDeleteCertificateSelfLink(id);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.NOT_FOUND);
         }
-
     }
 
     @PatchMapping("/{id}")
@@ -146,13 +136,9 @@ public class GiftCertificateController {
                 return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.BAD_REQUEST);
             }
         } catch (ServiceException e) {
-            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
-                    (new ActionHypermedia(e.getMessage()));
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(ERROR_MESSAGE));
             builder.buildUpdateCertificateSelfLink(certificate, id);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.NOT_FOUND);
         }
-
     }
-
-
 }

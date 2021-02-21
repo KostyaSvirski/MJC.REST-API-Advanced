@@ -27,7 +27,7 @@ class OrderRepositoryImplTest {
     private OrderRepository repository;
 
     @BeforeEach
-    public void defaultData() throws DaoException {
+    public void createDefaultData() throws DaoException {
         for (int i = 0; i < 100; i++) {
             OrderEntity order = new OrderEntity();
             order.setIdUser((long) (Math.random() * 10 + 1));
@@ -46,7 +46,7 @@ class OrderRepositoryImplTest {
         order.setCost(100);
         order.setClosed(false);
         int result = repository.create(order);
-        assertEquals(101, result);
+        assertTrue(result > 0);
     }
 
     @Test
@@ -64,7 +64,7 @@ class OrderRepositoryImplTest {
 
     @Test
     public void findNotExistOrder() throws DaoException {
-        Optional<OrderEntity> entity = repository.find(101);
+        Optional<OrderEntity> entity = repository.find(0);
         assertFalse(entity.isPresent());
     }
 

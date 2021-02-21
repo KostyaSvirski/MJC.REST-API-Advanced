@@ -25,12 +25,12 @@ public class CertificateRepositoryImpl implements CertificateRepository {
     private EntityManager em;
 
     @Override
-    public Optional<GiftCertificateEntity> find(long id) throws DaoException {
+    public Optional<GiftCertificateEntity> find(long id) {
         return Optional.ofNullable(em.find(GiftCertificateEntity.class, id));
     }
 
     @Override
-    public List<GiftCertificateEntity> findAll(int limit, int page) throws DaoException {
+    public List<GiftCertificateEntity> findAll(int limit, int page) {
         return em.createQuery(HQL_RETRIEVE_ALL + HQL_ORDER_BY_ID)
                 .setFirstResult((page - 1) * limit)
                 .setMaxResults(limit)
@@ -39,51 +39,21 @@ public class CertificateRepositoryImpl implements CertificateRepository {
 
 
     @Override
-    public int create(GiftCertificateEntity entity) throws DaoException {
+    public int create(GiftCertificateEntity entity) {
         em.persist(entity);
         return (int) entity.getId();
     }
 
 
     @Override
-    public void delete(long id) throws DaoException {
+    public void delete(long id) {
         GiftCertificateEntity certToDelete = em.find(GiftCertificateEntity.class, id);
         em.remove(certToDelete);
     }
 
     @Override
-    public void update(GiftCertificateEntity certificateExampleForUpdate, long id) throws DaoException {
-        Optional<GiftCertificateEntity> certWrapper = find(id);
-        if (certWrapper.isPresent()) {
-            GiftCertificateEntity cert = certWrapper.get();
-            insertDataForUpdate(certificateExampleForUpdate, cert);
-            em.merge(cert);
-        }
-    }
-
-    private void insertDataForUpdate
-            (GiftCertificateEntity example, GiftCertificateEntity cert) {
-        if (example.getName() != null) {
-            cert.setName(example.getName());
-        }
-        if (example.getDescription() != null) {
-            cert.setDescription(example.getDescription());
-        }
-        if (example.getLastUpdateDate() != null) {
-            cert.setLastUpdateDate(example.getLastUpdateDate());
-        }
-        if (example.getCreateDate() != null) {
-            cert.setCreateDate(example.getCreateDate());
-        }
-        if (example.getDuration() != 0) {
-            cert.setDuration(example.getDuration());
-        }
-        if (example.getPrice() != 0) {
-            cert.setPrice(example.getPrice());
-        }
-        if (example.getTagsDependsOnCertificate() != null) {
-            cert.setTagsDependsOnCertificate(example.getTagsDependsOnCertificate());
-        }
+    public void update(GiftCertificateEntity certificateExampleForUpdate) {
+        em.merge(certificateExampleForUpdate);
     }
 
     @Override
@@ -96,8 +66,7 @@ public class CertificateRepositoryImpl implements CertificateRepository {
         return getSortedCertificates(method, limit, page, HQL_ORDER_BY_CREATE_DATE);
     }
 
-    private List<GiftCertificateEntity> getSortedCertificates
-            (String method, int limit, int page, String hqlOrderBy) {
+    private List<GiftCertificateEntity> getSortedCertificates(String method, int limit, int page, String hqlOrderBy) {
         return em.createQuery(HQL_RETRIEVE_ALL + hqlOrderBy + method)
                 .setFirstResult(limit * (page - 1))
                 .setMaxResults(limit)
@@ -105,19 +74,16 @@ public class CertificateRepositoryImpl implements CertificateRepository {
     }
 
     @Override
-    public List<GiftCertificateEntity> searchByName
-            (String name, int limit, int page) {
+    public List<GiftCertificateEntity> searchByName(String name, int limit, int page) {
         return searchCerts(limit, page, HQL_CONDITION_NAME, name);
     }
 
     @Override
-    public List<GiftCertificateEntity> searchByDescription
-            (String description, int limit, int page) {
+    public List<GiftCertificateEntity> searchByDescription(String description, int limit, int page) {
         return searchCerts(limit, page, HQL_CONDITION_DESCRIPTION, description);
     }
 
-    private List<GiftCertificateEntity> searchCerts
-            (int limit, int page, String hqlCondition, String param) {
+    private List<GiftCertificateEntity> searchCerts(int limit, int page, String hqlCondition, String param) {
         Query query = em.createQuery(HQL_RETRIEVE_ALL + hqlCondition);
         query.setParameter(1, param);
         return query.setFirstResult(limit * (page - 1))
@@ -128,8 +94,7 @@ public class CertificateRepositoryImpl implements CertificateRepository {
 
     // TODO: 09.02.2021
     @Override
-    public List<GiftCertificateEntity> searchByTag(String nameOfTag, int limit, int page)
-            throws DaoException {
+    public List<GiftCertificateEntity> searchByTag(String nameOfTag, int limit, int page) {
         return null;
     }
 }

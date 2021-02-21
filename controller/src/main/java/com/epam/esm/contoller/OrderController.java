@@ -1,8 +1,8 @@
 package com.epam.esm.contoller;
 
-import com.epam.esm.dto.OrderDTO;
-import com.epam.esm.dto.CreateActionHypermedia;
 import com.epam.esm.dto.ActionHypermedia;
+import com.epam.esm.dto.CreateActionHypermedia;
+import com.epam.esm.dto.OrderDTO;
 import com.epam.esm.exception.ServiceException;
 import com.epam.esm.service.OrderService;
 import com.epam.esm.util.builder.ActionHypermediaLinkBuilder;
@@ -25,6 +25,7 @@ public class OrderController {
     private static final int DEFAULT_PAGE_INT = 1;
     private static final String DEFAULT_LIMIT = "5";
     private static final String DEFAULT_PAGE = "1";
+    private static final String ERROR_MESSAGE = "error";
 
     @Autowired
     private OrderService service;
@@ -36,13 +37,12 @@ public class OrderController {
             List<OrderDTO> resultList = service.findAll(limit, page);
             for (int i = 0; i < resultList.size(); i++) {
                 OrderLinkBuilder builder = new OrderLinkBuilder(resultList.get(i));
-                builder.buildCertificateReferenceLink().buildUserReferenceLink()
-                        .buildRetrieveSpecificOrderLink();
+                builder.buildCertificateReferenceLink().buildUserReferenceLink().buildRetrieveSpecificOrderLink();
                 resultList.set(i, builder.getHypermedia());
             }
             return new ResponseEntity<>(resultList, HttpStatus.OK);
         } catch (ServiceException e) {
-            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(e.getMessage()));
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(ERROR_MESSAGE));
             builder.buildRetrieveAllOrdersLink(limit, page);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -63,7 +63,7 @@ public class OrderController {
                 return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.NOT_FOUND);
             }
         } catch (ServiceException e) {
-            ActionHypermedia actionHypermedia = new ActionHypermedia(e.getMessage());
+            ActionHypermedia actionHypermedia = new ActionHypermedia(ERROR_MESSAGE);
             ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(actionHypermedia);
             builder.buildRetrieveSpecificOrderSelfLink(id);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -76,22 +76,19 @@ public class OrderController {
         try {
             int result = service.create(order);
             if (result != 0) {
-                CreateHypermediaLinkBuilder builder = new CreateHypermediaLinkBuilder
-                        (new CreateActionHypermedia(result));
+                CreateHypermediaLinkBuilder builder = new CreateHypermediaLinkBuilder(new CreateActionHypermedia(result));
                 builder.buildNewOrderLink(result);
                 return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.OK);
             } else {
-                ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
-                        (new ActionHypermedia("not valid data"));
+                ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia("not valid data"));
                 builder.buildCreateOrderSelfLink(order);
                 return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.BAD_REQUEST);
             }
         } catch (ServiceException e) {
             ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
-                    (new ActionHypermedia(e.getMessage()));
+                    (new ActionHypermedia(ERROR_MESSAGE));
             builder.buildCreateOrderSelfLink(order);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
     }
 }

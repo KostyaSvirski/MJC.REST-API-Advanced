@@ -41,7 +41,7 @@ public class TagServiceImpl implements TagService {
                     .map(converterToDTO)
                     .collect(Collectors.toList());
         } catch (DaoException e) {
-            throw new ServiceException("exception in dao", e.getCause());
+            throw new ServiceException(e.getCause());
         }
     }
 
@@ -51,7 +51,7 @@ public class TagServiceImpl implements TagService {
             Optional<TagEntity> tagFromDao = tagRepository.find(id);
             return tagFromDao.map(converterToDTO);
         } catch (DaoException e) {
-            throw new ServiceException("exception in dao", e.getCause());
+            throw new ServiceException(e.getCause());
         }
     }
 
@@ -63,7 +63,7 @@ public class TagServiceImpl implements TagService {
             try {
                 return tagRepository.create(converterToEntity.apply(tagDTO));
             } catch (DaoException e) {
-                throw new ServiceException("exception in dao", e.getCause());
+                throw new ServiceException(e.getCause());
             }
         }
         return 0;
@@ -72,9 +72,14 @@ public class TagServiceImpl implements TagService {
     @Override
     public void delete(long id) throws ServiceException {
         try {
-            tagRepository.delete(id);
+            Optional<TagEntity> tagWrapper = tagRepository.find(id);
+            if (tagWrapper.isPresent()) {
+                tagRepository.delete(id);
+            } else {
+                throw new ServiceException("not found");
+            }
         } catch (DaoException e) {
-            throw new ServiceException("exception in dao", e.getCause());
+            throw new ServiceException(e.getCause());
         }
     }
 }

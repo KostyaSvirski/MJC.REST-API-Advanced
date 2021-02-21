@@ -10,13 +10,11 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import java.sql.Timestamp;
 
-@EqualsAndHashCode
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@Getter
-@Setter
 @Table(name = "order_of_user")
 public class OrderEntity {
 

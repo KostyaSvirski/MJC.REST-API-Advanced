@@ -1,8 +1,13 @@
 package com.epam.esm.contoller;
 
+import com.epam.esm.dto.ActionHypermedia;
+import com.epam.esm.dto.CreateActionHypermedia;
 import com.epam.esm.dto.TagDTO;
 import com.epam.esm.exception.ServiceException;
 import com.epam.esm.service.TagService;
+import com.epam.esm.util.builder.ActionHypermediaLinkBuilder;
+import com.epam.esm.util.builder.CreateHypermediaLinkBuilder;
+import com.epam.esm.util.builder.TagLinkBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,29 +20,49 @@ import java.util.Optional;
 @RequestMapping("/tags")
 public class TagController {
 
+    private static final String DEFAULT_LIMIT = "5";
+    private static final String DEFAULT_PAGE = "1";
+
     @Autowired
     private TagService tagService;
 
     @GetMapping("/")
-    public ResponseEntity<?> findAllTags(@RequestParam int limit, @RequestParam int page) {
-        List<TagDTO> allTags;
+    public ResponseEntity<?> findAllTags(@RequestParam(defaultValue = DEFAULT_LIMIT) int limit,
+                                         @RequestParam(defaultValue = DEFAULT_PAGE) int page) {
         try {
-            allTags = tagService.findAll(limit, page);
+            List<TagDTO> allTags = tagService.findAll(limit, page);
+            for (int i = 0; i < allTags.size(); i++) {
+                TagLinkBuilder builder = new TagLinkBuilder(allTags.get(i));
+                builder.buildCertificatesDependsOnTagLink();
+                allTags.set(i, builder.getHypermedia());
+            }
             return new ResponseEntity<>(allTags, HttpStatus.OK);
         } catch (ServiceException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(e.getMessage()));
+            builder.buildFindAllTagsSelfLink(limit, page);
+            return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> findSpecificTag(@PathVariable long id) {
-        Optional<TagDTO> tagToFind;
         try {
-            tagToFind = tagService.find(id);
-            return tagToFind.map(tagDTO -> new ResponseEntity<>(tagDTO, HttpStatus.OK))
-                    .orElseGet(() -> new ResponseEntity("not found", HttpStatus.NOT_FOUND));
+            Optional<TagDTO> tagToFind = tagService.find(id);
+            if (tagToFind.isPresent()) {
+                TagLinkBuilder builder = new TagLinkBuilder(tagToFind.get());
+                builder.buildCertificatesDependsOnTagLink();
+                return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.OK);
+            } else {
+                ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
+                        (new ActionHypermedia("not found"));
+                builder.buildFindAllTagsSelfLink(Integer.parseInt(DEFAULT_LIMIT), Integer.parseInt(DEFAULT_PAGE));
+                return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.NOT_FOUND);
+            }
         } catch (ServiceException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
+                    (new ActionHypermedia(e.getMessage()));
+            builder.buildFindSpecificTagSelfLink(id);
+            return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -47,12 +72,20 @@ public class TagController {
         try {
             int result = tagService.create(newTag);
             if (result != 0) {
-                return new ResponseEntity<>(result, HttpStatus.CREATED);
+                CreateHypermediaLinkBuilder builder = new CreateHypermediaLinkBuilder(new CreateActionHypermedia(result));
+                builder.buildNewTagLink(result);
+                return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.CREATED);
             } else {
-                return new ResponseEntity<>("not valid data", HttpStatus.BAD_REQUEST);
+                ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
+                        (new ActionHypermedia("not valid data"));
+                builder.buildAddTagSelfLink(newTag);
+                return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.BAD_REQUEST);
             }
         } catch (ServiceException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
+                    (new ActionHypermedia(e.getMessage()));
+            builder.buildAddTagSelfLink(newTag);
+            return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -60,11 +93,15 @@ public class TagController {
     public ResponseEntity<?> deleteTag(@PathVariable long id) {
         try {
             tagService.delete(id);
-            return new ResponseEntity<>("tag with id " + id + " deleted", HttpStatus.OK);
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
+                    (new ActionHypermedia("tag with id " + id + " deleted"));
+            builder.buildFindAllTagsLink(Integer.parseInt(DEFAULT_LIMIT), Integer.parseInt(DEFAULT_PAGE));
+            return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.OK);
         } catch (ServiceException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
+                    (new ActionHypermedia(e.getMessage()));
+            builder.buildDeleteTagSelfLink(id);
+            return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-
 }

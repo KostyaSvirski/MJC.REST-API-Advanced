@@ -19,20 +19,15 @@ public class UserRepositoryImpl implements UserRepository {
     private EntityManager em;
 
     @Override
-    public Optional<UserEntity> find(long id) throws DaoException {
+    public Optional<UserEntity> find(long id) {
         return Optional.ofNullable(em.find(UserEntity.class, id));
     }
 
     @Override
-    public List<UserEntity> findAll(int limit, int page) throws DaoException {
-        try {
-            List listOfUsers = em.createQuery(HQL_FIND_ALL)
-                    .setFirstResult((page - 1) * limit)
-                    .setMaxResults(limit)
-                    .getResultList();
-            return listOfUsers;
-        } catch (Throwable e) {
-            throw new DaoException(e.getMessage());
-        }
+    public List<UserEntity> findAll(int limit, int page) {
+        return em.createQuery(HQL_FIND_ALL)
+                .setFirstResult((page - 1) * limit)
+                .setMaxResults(limit)
+                .getResultList();
     }
 }

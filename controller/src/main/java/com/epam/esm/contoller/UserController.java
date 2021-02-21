@@ -1,15 +1,14 @@
 package com.epam.esm.contoller;
 
+import com.epam.esm.dto.ActionHypermedia;
 import com.epam.esm.dto.OrderDTO;
 import com.epam.esm.dto.UserDTO;
-import com.epam.esm.dto.ActionHypermedia;
 import com.epam.esm.exception.ServiceException;
 import com.epam.esm.service.UserService;
 import com.epam.esm.util.builder.ActionHypermediaLinkBuilder;
 import com.epam.esm.util.builder.OrderLinkBuilder;
 import com.epam.esm.util.builder.UserLinkBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,11 +20,11 @@ import java.util.Optional;
 @RequestMapping("/users")
 public class UserController {
 
-
     private static final int DEFAULT_LIMIT_INT = 5;
     private static final int DEFAULT_PAGE_INT = 1;
     private static final String DEFAULT_LIMIT = "5";
     private static final String DEFAULT_PAGE = "1";
+    private static final String ERROR_MESSAGE = "error";
     @Autowired
     private UserService service;
 
@@ -42,7 +41,7 @@ public class UserController {
             }
             return new ResponseEntity<>(resultList, HttpStatus.OK);
         } catch (ServiceException e) {
-            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(e.getMessage()));
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(ERROR_MESSAGE));
             builder.buildRetrieveAllUsersSelfLink(limit, page);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -57,14 +56,12 @@ public class UserController {
                 builder.buildOrdersReferencesLink(DEFAULT_LIMIT_INT, DEFAULT_PAGE_INT);
                 return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.OK);
             } else {
-                ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
-                        (new ActionHypermedia("no content"));
+                ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia("no content"));
                 builder.buildRetrieveSpecificUserSelfLink(id);
                 return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.NOT_FOUND);
             }
         } catch (ServiceException e) {
-            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
-                    (new ActionHypermedia(e.getMessage()));
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(ERROR_MESSAGE));
             builder.buildRetrieveSpecificUserSelfLink(id);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -84,8 +81,7 @@ public class UserController {
             }
             return new ResponseEntity<>(resultList, HttpStatus.OK);
         } catch (ServiceException e) {
-            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
-                    (new ActionHypermedia(e.getMessage()));
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(ERROR_MESSAGE));
             builder.buildRetrieveOrdersOfSpecificUserSelfLink(limit, page, id);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -109,7 +105,7 @@ public class UserController {
                 return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.NOT_FOUND);
             }
         } catch (ServiceException e) {
-            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(e.getMessage()));
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(ERROR_MESSAGE));
             builder.buildRetrieveOrderOfSpecificUserSelfLink(idUser, idOrder);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
