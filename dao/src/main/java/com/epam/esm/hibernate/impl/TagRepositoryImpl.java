@@ -1,6 +1,5 @@
 package com.epam.esm.hibernate.impl;
 
-import com.epam.esm.exception.DaoException;
 import com.epam.esm.hibernate.TagRepository;
 import com.epam.esm.persistence.TagEntity;
 import org.springframework.stereotype.Repository;
@@ -14,7 +13,6 @@ import java.util.Optional;
 public class TagRepositoryImpl implements TagRepository {
 
     private final static String HQL_FIND_ALL = "from TagEntity order by id";
-    private final static String HQL_FIND_LAST_ID = "select max(tag.id) from HibernateTagEntity tag";
 
     @PersistenceContext
     private EntityManager em;

@@ -19,15 +19,12 @@ class TagsValidatorLinkTest {
     private TagDTO[][] incParamsToCheck = {{new TagDTO(-1L, "first-name")},
             {new TagDTO(1L, null)}};
 
-   /* @Test
+    @Test
     public void testValidation() {
         for (TagDTO[] param : paramsToCheck) {
             GiftCertificateDTO certificate = new GiftCertificateDTO();
-            Set<TagDTO> tags = new HashSet<>();
-            for(TagDTO[] tagDTO : paramsToCheck) {
-
-            }
-            certificate.setTags(Arrays.asList(param));
+            Set<TagDTO> tags = new HashSet<>(Arrays.asList(param));
+            certificate.setTags(tags);
             assertTrue(validator.validate(certificate));
         }
     }
@@ -36,9 +33,10 @@ class TagsValidatorLinkTest {
     public void testValidationIncParams() {
         for (TagDTO[] param : incParamsToCheck) {
             GiftCertificateDTO certificate = new GiftCertificateDTO();
-            certificate.setTags(Arrays.asList(param));
+            Set<TagDTO> tags = new HashSet<>(Arrays.asList(param));
+            certificate.setTags(tags);
             assertFalse(validator.validate(certificate));
         }
-    }*/
+    }
 
 }

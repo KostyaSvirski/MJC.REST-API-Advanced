@@ -1,6 +1,5 @@
 package com.epam.esm.hibernate.impl;
 
-import com.epam.esm.exception.DaoException;
 import com.epam.esm.hibernate.OrderRepository;
 import com.epam.esm.persistence.OrderEntity;
 import org.springframework.stereotype.Repository;
@@ -29,11 +28,10 @@ public class OrderRepositoryImpl implements OrderRepository {
 
     @Override
     public List<OrderEntity> findAll(int limit, int page) {
-        List orders = em.createQuery(HQL_FIND_ALL)
+        return em.createQuery(HQL_FIND_ALL)
                 .setFirstResult((page - 1) * limit)
                 .setMaxResults(limit)
                 .getResultList();
-        return orders;
 
     }
 
@@ -42,24 +40,21 @@ public class OrderRepositoryImpl implements OrderRepository {
         Query query = em.createQuery(HQL_FIND_ORDERS_OF_USER + SUFFIX_FOR_ONE_ORDER);
         query.setParameter("idUser", idUser);
         query.setParameter("idOrder", idOrder);
-        List orders = query.getResultList();
-        return orders;
+        return query.getResultList();
     }
 
     @Override
     public int create(OrderEntity newOrder) {
         em.persist(newOrder);
-        int idNewOrder = (int) newOrder.getId();
-        return idNewOrder;
+        return (int) newOrder.getId();
     }
 
     @Override
     public List<OrderEntity> findOrdersOfSpecificUser(long idUser, int limit, int page) {
         Query query = em.createQuery(HQL_FIND_ORDERS_OF_USER);
         query.setParameter("idUser", idUser);
-        List orders = query.setFirstResult((page - 1) * limit)
+        return query.setFirstResult((page - 1) * limit)
                 .setMaxResults(limit)
                 .getResultList();
-        return orders;
     }
 }

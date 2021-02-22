@@ -89,7 +89,7 @@ public class OrderDaoImpl implements OrderDao {
     }
 
     @Override
-    public Optional<Order> find(long id) throws DaoException {
+    public Optional<Order> find(long id) {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
@@ -97,17 +97,17 @@ public class OrderDaoImpl implements OrderDao {
             try {
                 return getOrders((int) id, 1, 1, connection, specificRequest).stream().findFirst();
             } catch (SQLException throwables) {
-                throw new DaoException("error occurs while executing request", throwables);
+                throw new RuntimeException("error occurs while executing request", throwables);
             } finally {
                 dataSource.closeConnection(connection);
             }
         } catch (DBCPDataSourceException e) {
-            throw new DaoException(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
     @Override
-    public List<Order> findAll(int limit, int page) throws DaoException {
+    public List<Order> findAll(int limit, int page) {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
@@ -118,12 +118,12 @@ public class OrderDaoImpl implements OrderDao {
                 ResultSet rs = ps.executeQuery();
                 return createResultList(rs);
             } catch (SQLException throwables) {
-                throw new DaoException("error occurs while executing request");
+                throw new RuntimeException("error occurs while executing request");
             } finally {
                 dataSource.closeConnection(connection);
             }
         } catch (DBCPDataSourceException e) {
-            throw new DaoException(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 

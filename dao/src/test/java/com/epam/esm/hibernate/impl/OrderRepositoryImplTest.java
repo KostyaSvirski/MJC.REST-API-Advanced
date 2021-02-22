@@ -27,7 +27,7 @@ class OrderRepositoryImplTest {
     private OrderRepository repository;
 
     @BeforeEach
-    public void createDefaultData() throws DaoException {
+    public void createDefaultData() {
         for (int i = 0; i < 100; i++) {
             OrderEntity order = new OrderEntity();
             order.setIdUser((long) (Math.random() * 10 + 1));
@@ -39,7 +39,7 @@ class OrderRepositoryImplTest {
     }
 
     @Test
-    public void testInsert() throws DaoException {
+    public void testInsert() {
         OrderEntity order = new OrderEntity();
         order.setIdUser(1);
         order.setIdCertificate(1);
@@ -50,7 +50,7 @@ class OrderRepositoryImplTest {
     }
 
     @Test
-    public void findOrder() throws DaoException {
+    public void findOrder() {
         OrderEntity order = new OrderEntity();
         order.setIdUser(1);
         order.setIdCertificate(1);
@@ -63,13 +63,13 @@ class OrderRepositoryImplTest {
     }
 
     @Test
-    public void findNotExistOrder() throws DaoException {
+    public void findNotExistOrder() {
         Optional<OrderEntity> entity = repository.find(0);
         assertFalse(entity.isPresent());
     }
 
     @Test
-    public void findOrders() throws DaoException {
+    public void findOrders() {
         List<OrderEntity> entities = repository.findAll(10, 3);
         assertNotNull(entities);
         assertEquals(10, entities.size());
@@ -78,7 +78,7 @@ class OrderRepositoryImplTest {
     }
 
     @Test
-    public void findOrdersOfSpecificUser() throws DaoException {
+    public void findOrdersOfSpecificUser() {
         int expectedIdUser = 3;
         OrderEntity order = new OrderEntity();
         order.setIdUser(expectedIdUser);
@@ -93,7 +93,7 @@ class OrderRepositoryImplTest {
     }
 
     @Test
-    public void findOrderOfSpecificUser() throws DaoException {
+    public void findOrderOfSpecificUser() {
         int expectedIdUser = 3;
         OrderEntity order = new OrderEntity();
         order.setIdUser(expectedIdUser);

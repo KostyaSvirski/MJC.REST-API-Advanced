@@ -1,6 +1,5 @@
 package com.epam.esm.hibernate.impl;
 
-import com.epam.esm.exception.DaoException;
 import com.epam.esm.hibernate.UserRepository;
 import com.epam.esm.persistence.UserEntity;
 import org.springframework.stereotype.Repository;

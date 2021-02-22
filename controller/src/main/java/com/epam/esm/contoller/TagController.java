@@ -22,6 +22,7 @@ public class TagController {
 
     private static final String DEFAULT_LIMIT = "5";
     private static final String DEFAULT_PAGE = "1";
+    private static final String ERROR_MESSAGE = "error";
 
     @Autowired
     private TagService tagService;
@@ -37,8 +38,8 @@ public class TagController {
                 allTags.set(i, builder.getHypermedia());
             }
             return new ResponseEntity<>(allTags, HttpStatus.OK);
-        } catch (ServiceException e) {
-            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(e.getMessage()));
+        } catch (Throwable e) {
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(ERROR_MESSAGE));
             builder.buildFindAllTagsSelfLink(limit, page);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -58,9 +59,9 @@ public class TagController {
                 builder.buildFindAllTagsSelfLink(Integer.parseInt(DEFAULT_LIMIT), Integer.parseInt(DEFAULT_PAGE));
                 return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.NOT_FOUND);
             }
-        } catch (ServiceException e) {
+        } catch (Throwable e) {
             ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
-                    (new ActionHypermedia(e.getMessage()));
+                    (new ActionHypermedia(ERROR_MESSAGE));
             builder.buildFindSpecificTagSelfLink(id);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -81,9 +82,8 @@ public class TagController {
                 builder.buildAddTagSelfLink(newTag);
                 return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.BAD_REQUEST);
             }
-        } catch (ServiceException e) {
-            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
-                    (new ActionHypermedia(e.getMessage()));
+        } catch (Throwable e) {
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(ERROR_MESSAGE));
             builder.buildAddTagSelfLink(newTag);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -100,6 +100,11 @@ public class TagController {
         } catch (ServiceException e) {
             ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
                     (new ActionHypermedia(e.getMessage()));
+            builder.buildDeleteTagSelfLink(id);
+            return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.NOT_FOUND);
+        } catch (Throwable e) {
+            ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
+                    (new ActionHypermedia(ERROR_MESSAGE));
             builder.buildDeleteTagSelfLink(id);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

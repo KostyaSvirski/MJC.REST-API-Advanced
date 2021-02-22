@@ -40,7 +40,7 @@ public class UserController {
                 resultList.set(i, builder.getHypermedia());
             }
             return new ResponseEntity<>(resultList, HttpStatus.OK);
-        } catch (ServiceException e) {
+        } catch (Throwable e) {
             ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(ERROR_MESSAGE));
             builder.buildRetrieveAllUsersSelfLink(limit, page);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -60,7 +60,7 @@ public class UserController {
                 builder.buildRetrieveSpecificUserSelfLink(id);
                 return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.NOT_FOUND);
             }
-        } catch (ServiceException e) {
+        } catch (Throwable e) {
             ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(ERROR_MESSAGE));
             builder.buildRetrieveSpecificUserSelfLink(id);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -80,7 +80,7 @@ public class UserController {
                 resultList.set(i, builder.getHypermedia());
             }
             return new ResponseEntity<>(resultList, HttpStatus.OK);
-        } catch (ServiceException e) {
+        } catch (Throwable e) {
             ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(ERROR_MESSAGE));
             builder.buildRetrieveOrdersOfSpecificUserSelfLink(limit, page, id);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -104,7 +104,7 @@ public class UserController {
                         .buildRetrieveSpecificUserLink(idUser);
                 return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.NOT_FOUND);
             }
-        } catch (ServiceException e) {
+        } catch (Throwable e) {
             ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(ERROR_MESSAGE));
             builder.buildRetrieveOrderOfSpecificUserSelfLink(idUser, idOrder);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);

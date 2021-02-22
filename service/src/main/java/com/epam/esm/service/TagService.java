@@ -5,7 +5,7 @@ import com.epam.esm.exception.ServiceException;
 
 public interface TagService extends BaseService<TagDTO> {
 
-    int create(TagDTO bean) throws ServiceException;
+    int create(TagDTO bean);
 
     void delete(long id) throws ServiceException;
 }

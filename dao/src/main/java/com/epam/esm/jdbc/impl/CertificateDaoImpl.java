@@ -183,7 +183,7 @@ public class CertificateDaoImpl implements GiftCertificateDao {
     }
 
     @Override
-    public Optional<GiftCertificate> find(long id) throws DaoException {
+    public Optional<GiftCertificate> find(long id) {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
@@ -197,17 +197,17 @@ public class CertificateDaoImpl implements GiftCertificateDao {
                 List<GiftCertificate> specificCertificates = createFoundList(rs);
                 return specificCertificates.stream().findFirst();
             } catch (SQLException throwables) {
-                throw new DaoException("error occurs while executing request", throwables);
+                throw new RuntimeException("error occurs while executing request", throwables);
             } finally {
                 dataSource.closeConnection(connection);
             }
         } catch (DBCPDataSourceException e) {
-            throw new DaoException(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
     @Override
-    public List<GiftCertificate> findAll(int limit, int page) throws DaoException {
+    public List<GiftCertificate> findAll(int limit, int page) {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
@@ -220,12 +220,12 @@ public class CertificateDaoImpl implements GiftCertificateDao {
                 List<GiftCertificate> allCertificates = createFoundList(rs);
                 return allCertificates;
             } catch (SQLException throwables) {
-                throw new DaoException("error occurs while executing request", throwables);
+                throw new RuntimeException("error occurs while executing request", throwables);
             } finally {
                 dataSource.closeConnection(connection);
             }
         } catch (DBCPDataSourceException e) {
-            throw new DaoException(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 

@@ -7,9 +7,9 @@ import java.util.Optional;
 
 public interface Repository<T> {
 
-    Optional<T> find(long id) throws DaoException;
+    Optional<T> find(long id);
 
-    List<T> findAll(int limit, int page) throws DaoException;
+    List<T> findAll(int limit, int page);
 
 
 }

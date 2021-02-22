@@ -2,7 +2,6 @@ package com.epam.esm.jdbc.impl;
 
 import com.epam.esm.entity.User;
 import com.epam.esm.exception.DBCPDataSourceException;
-import com.epam.esm.exception.DaoException;
 import com.epam.esm.jdbc.UserDao;
 import com.epam.esm.pool.DBCPDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +31,7 @@ public class UserDaoImpl implements UserDao {
     private DBCPDataSource dataSource;
 
     @Override
-    public List<User> findAll(int limit, int page) throws DaoException {
+    public List<User> findAll(int limit, int page) {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
@@ -44,17 +43,17 @@ public class UserDaoImpl implements UserDao {
                 ResultSet rs = ps.executeQuery();
                 return createResultList(rs);
             } catch (SQLException throwables) {
-                throw new DaoException("error occurs while executing request", throwables);
+                throw new RuntimeException("error occurs while executing request", throwables);
             } finally {
                 dataSource.closeConnection(connection);
             }
         } catch (DBCPDataSourceException e) {
-            throw new DaoException(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
     @Override
-    public Optional<User> find(long id) throws DaoException {
+    public Optional<User> find(long id) {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
@@ -67,10 +66,10 @@ public class UserDaoImpl implements UserDao {
                 ResultSet rs = ps.executeQuery();
                 return createResultList(rs).stream().findFirst();
             } catch (SQLException throwables) {
-                throw new DaoException("error occurs while executing request", throwables);
+                throw new RuntimeException("error occurs while executing request", throwables);
             }
         } catch (DBCPDataSourceException e) {
-            throw new DaoException(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 

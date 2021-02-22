@@ -34,7 +34,7 @@ class TagRepositoryImplTest {
     private TagRepository repository;
 
     @BeforeEach
-    void createDefaultData() throws DaoException {
+    void createDefaultData() {
         for (int i = 0; i < 100; i++) {
             TagEntity tag = new TagEntity();
             tag.setName(PREFIX_NAME + i);
@@ -43,7 +43,7 @@ class TagRepositoryImplTest {
     }
 
     @Test
-    public void testCreateTag() throws DaoException {
+    public void testCreateTag() {
         TagEntity tag = new TagEntity();
         tag.setName("name");
         GiftCertificateEntity cert = new GiftCertificateEntity();
@@ -59,7 +59,7 @@ class TagRepositoryImplTest {
     }
 
     @Test
-    public void testCreateTwoTags() throws DaoException {
+    public void testCreateTwoTags() {
         TagEntity tag = new TagEntity();
         tag.setName("name");
         GiftCertificateEntity cert = new GiftCertificateEntity();
@@ -93,7 +93,7 @@ class TagRepositoryImplTest {
 
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 3, 4, 5})
-    public void testFindAllByPage(int page) throws DaoException {
+    public void testFindAllByPage(int page) {
         List<TagEntity> result = repository.findAll(10, page);
         assertNotNull(result);
         assertEquals((page - 1) * 10L + 1, result.get(0).getId());
@@ -102,7 +102,7 @@ class TagRepositoryImplTest {
 
     @ParameterizedTest
     @ValueSource(ints = {3, 4, 5, 6, 7})
-    public void testFindAllByLimit(int limit) throws DaoException {
+    public void testFindAllByLimit(int limit) {
         List<TagEntity> result = repository.findAll(limit, 1);
         assertNotNull(result);
         assertEquals(1, result.get(0).getId());

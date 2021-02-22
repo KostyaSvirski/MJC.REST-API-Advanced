@@ -100,7 +100,7 @@ public class TagDaoImpl implements TagDao {
     }
 
     @Override
-    public Optional<Tag> find(long id) throws DaoException {
+    public Optional<Tag> find(long id) {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
@@ -114,17 +114,17 @@ public class TagDaoImpl implements TagDao {
                 List<Tag> listOfEntities = createListOfEntities(rs);
                 return listOfEntities.stream().findFirst();
             } catch (SQLException throwables) {
-                throw new DaoException("error occurs while executing request", throwables);
+                throw new RuntimeException("error occurs while executing request", throwables);
             } finally {
                 dataSource.closeConnection(connection);
             }
         } catch (DBCPDataSourceException e) {
-            throw new DaoException(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
     @Override
-    public List<Tag> findAll(int limit, int page) throws DaoException {
+    public List<Tag> findAll(int limit, int page) {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
@@ -136,12 +136,12 @@ public class TagDaoImpl implements TagDao {
                 List<Tag> listOfEntities = createListOfEntities(rs);
                 return listOfEntities;
             } catch (SQLException throwables) {
-                throw new DaoException("error occurs while executing request", throwables);
+                throw new RuntimeException("error occurs while executing request", throwables);
             } finally {
                 dataSource.closeConnection(connection);
             }
         } catch (DBCPDataSourceException e) {
-            throw new DaoException(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 

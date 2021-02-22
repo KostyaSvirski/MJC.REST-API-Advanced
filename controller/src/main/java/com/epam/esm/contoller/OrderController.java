@@ -41,7 +41,7 @@ public class OrderController {
                 resultList.set(i, builder.getHypermedia());
             }
             return new ResponseEntity<>(resultList, HttpStatus.OK);
-        } catch (ServiceException e) {
+        } catch (Throwable e) {
             ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(new ActionHypermedia(ERROR_MESSAGE));
             builder.buildRetrieveAllOrdersLink(limit, page);
             return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -62,7 +62,7 @@ public class OrderController {
                 builder.buildRetrieveAllOrdersLink(DEFAULT_LIMIT_INT, DEFAULT_PAGE_INT);
                 return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.NOT_FOUND);
             }
-        } catch (ServiceException e) {
+        } catch (Throwable e) {
             ActionHypermedia actionHypermedia = new ActionHypermedia(ERROR_MESSAGE);
             ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder(actionHypermedia);
             builder.buildRetrieveSpecificOrderSelfLink(id);
@@ -84,7 +84,7 @@ public class OrderController {
                 builder.buildCreateOrderSelfLink(order);
                 return new ResponseEntity<>(builder.getHypermedia(), HttpStatus.BAD_REQUEST);
             }
-        } catch (ServiceException e) {
+        } catch (Throwable e) {
             ActionHypermediaLinkBuilder builder = new ActionHypermediaLinkBuilder
                     (new ActionHypermedia(ERROR_MESSAGE));
             builder.buildCreateOrderSelfLink(order);

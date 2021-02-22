@@ -70,10 +70,8 @@ class TagServiceImplTest {
     @Test
     public void testFindAllException() throws DaoException {
         Mockito.when(repository.findAll(Mockito.anyInt(), Mockito.anyInt())).thenThrow(new DaoException());
-        Throwable throwable = assertThrows(ServiceException.class,
+        assertThrows(ServiceException.class,
                 () -> service.findAll(Mockito.anyInt(), Mockito.anyInt()));
-        String expected = "exception in dao";
-        assertEquals(expected, throwable.getMessage());
     }
 
     @ParameterizedTest

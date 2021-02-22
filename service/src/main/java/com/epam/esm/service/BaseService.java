@@ -7,9 +7,9 @@ import java.util.Optional;
 
 public interface BaseService<T> {
 
-    List<T> findAll(int limit, int page) throws ServiceException;
+    List<T> findAll(int limit, int page);
 
-    Optional<T> find(long id) throws ServiceException;
+    Optional<T> find(long id);
 
 
 

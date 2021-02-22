@@ -4,7 +4,6 @@ import com.epam.esm.converter.OrderEntityToOrderDTOConverter;
 import com.epam.esm.converter.UserEntityToUserDTOConverter;
 import com.epam.esm.dto.OrderDTO;
 import com.epam.esm.dto.UserDTO;
-import com.epam.esm.exception.DaoException;
 import com.epam.esm.exception.ServiceException;
 import com.epam.esm.hibernate.OrderRepository;
 import com.epam.esm.hibernate.UserRepository;
@@ -37,46 +36,30 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDTO> findAll(int limit, int page) throws ServiceException {
-        try {
-            List<UserEntity> listFromDao = userRepository.findAll(limit, page);
-            return listFromDao.stream().map(toUserDTOConverter)
-                    .collect(Collectors.toList());
-        } catch (DaoException e) {
-            throw new ServiceException(e.getCause());
-        }
+    public List<UserDTO> findAll(int limit, int page) {
+        List<UserEntity> listFromDao = userRepository.findAll(limit, page);
+        return listFromDao.stream().map(toUserDTOConverter)
+                .collect(Collectors.toList());
     }
 
     @Override
     public Optional<UserDTO> find(long id) throws ServiceException {
-        try {
-            Optional<UserEntity> userFromDao = userRepository.find(id);
-            return userFromDao.map(toUserDTOConverter);
-        } catch (DaoException e) {
-            throw new ServiceException(e.getCause());
-        }
+        Optional<UserEntity> userFromDao = userRepository.find(id);
+        return userFromDao.map(toUserDTOConverter);
     }
 
     @Override
-    public List<OrderDTO> findOrdersOfUser(long idUser, int limit, int page) throws ServiceException {
-        try {
-            List<OrderEntity> listFromDao = orderRepository.findOrdersOfSpecificUser(idUser, limit, page);
-            return listFromDao.stream().map(toOrderDTOConverter)
-                    .collect(Collectors.toList());
-        } catch (DaoException e) {
-            throw new ServiceException(e.getCause());
-        }
+    public List<OrderDTO> findOrdersOfUser(long idUser, int limit, int page) {
+        List<OrderEntity> listFromDao = orderRepository.findOrdersOfSpecificUser(idUser, limit, page);
+        return listFromDao.stream().map(toOrderDTOConverter)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<OrderDTO> findSpecificOrderOfUser(long idUser, long idOrder)
-            throws ServiceException {
-        try {
-            List<OrderEntity> listFromDao = orderRepository.findOrderOfSpecificUser(idUser, idOrder);
-            return listFromDao.stream().map(toOrderDTOConverter)
-                    .findFirst();
-        } catch (DaoException e) {
-            throw new ServiceException(e.getCause());
-        }
+    public Optional<OrderDTO> findSpecificOrderOfUser(long idUser, long idOrder) {
+        List<OrderEntity> listFromDao = orderRepository.findOrderOfSpecificUser(idUser, idOrder);
+        return listFromDao.stream().map(toOrderDTOConverter)
+                .findFirst();
+
     }
 }

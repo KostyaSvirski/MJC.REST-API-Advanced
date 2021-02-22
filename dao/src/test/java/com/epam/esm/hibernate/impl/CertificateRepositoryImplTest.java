@@ -36,7 +36,7 @@ class CertificateRepositoryImplTest {
     private CertificateRepository repository;
 
     @BeforeEach
-    public void defaultData() throws DaoException {
+    public void defaultData() {
         for (int i = 0; i < 100; i++) {
             GiftCertificateEntity cert = new GiftCertificateEntity();
             cert.setName("name " + i);
@@ -53,10 +53,10 @@ class CertificateRepositoryImplTest {
     }
 
     @AfterEach
-    public void deleteDefaultData() throws DaoException {
+    public void deleteDefaultData() {
         int i = 1;
         while (true) {
-            if (repository.find(i).isPresent()) {
+            if (repository.find(i).isPresent() && i <= 100) {
                 repository.delete(i);
                 i++;
             } else {
@@ -66,7 +66,7 @@ class CertificateRepositoryImplTest {
     }
 
     @Test
-    public void testCreate() throws DaoException {
+    public void testCreate() {
         GiftCertificateEntity cert = new GiftCertificateEntity();
         cert.setName("name");
         cert.setDescription("descr");
@@ -78,11 +78,11 @@ class CertificateRepositoryImplTest {
         tag.setName("tag");
         cert.addTag(tag);
         int result = repository.create(cert);
-        assertEquals(101, result);
+        assertTrue(result > 0);
     }
 
     @Test
-    public void testCreateCertWithSomeTags() throws DaoException {
+    public void testCreateCertWithSomeTags() {
         GiftCertificateEntity cert = new GiftCertificateEntity();
         cert.setName("name");
         cert.setDescription("descr");
@@ -103,7 +103,7 @@ class CertificateRepositoryImplTest {
     }
 
     @Test
-    public void testUpdateCert() throws DaoException {
+    public void testUpdateCert() {
         GiftCertificateEntity cert = new GiftCertificateEntity();
         cert.setName("name");
         cert.setDescription("descr");
@@ -129,7 +129,7 @@ class CertificateRepositoryImplTest {
     }
 
     @Test
-    public void testFindSpecificCert() throws DaoException {
+    public void testFindSpecificCert() {
         Optional<GiftCertificateEntity> cert = repository.find(1);
         assertTrue(cert.isPresent());
         Set<TagEntity> tagsDependsOnCert = cert.get().getTagsDependsOnCertificate();
@@ -138,7 +138,7 @@ class CertificateRepositoryImplTest {
     }
 
     @Test
-    void testFindAllCerts() throws DaoException {
+    void testFindAllCerts() {
         List<GiftCertificateEntity> list = repository.findAll(10, 1);
         assertEquals(10, list.size());
         assertEquals(1, list.get(0).getId());
@@ -146,14 +146,14 @@ class CertificateRepositoryImplTest {
     }
 
     @Test
-    public void testDeleteCert() throws DaoException {
+    public void testDeleteCert() {
         repository.delete(1);
         Optional<GiftCertificateEntity> cert = repository.find(1);
         assertFalse(cert.isPresent());
     }
 
     @Test
-    public void testRetrieveSortedByNameCertsAsc() throws DaoException {
+    public void testRetrieveSortedByNameCertsAsc() {
         List<GiftCertificateEntity> entities = repository
                 .sortCertificatesByName("asc", 10, 1);
         assertEquals(10, entities.size());
@@ -161,7 +161,7 @@ class CertificateRepositoryImplTest {
     }
 
     @Test
-    public void testRetrieveSortedByNameCertsDesc() throws DaoException {
+    public void testRetrieveSortedByNameCertsDesc() {
         List<GiftCertificateEntity> entities = repository
                 .sortCertificatesByName("desc", 10, 1);
         assertEquals(10, entities.size());
@@ -170,13 +170,13 @@ class CertificateRepositoryImplTest {
     }
 
     @Test
-    public void testRetrieveSortedByNameCertsException() throws DaoException {
+    public void testRetrieveSortedByNameCertsException() {
         assertThrows(DaoException.class, () -> repository
                 .sortCertificatesByName("awef", 10, 1));
     }
 
     @Test
-    public void testRetrieveSortedByDateCertsAsc() throws DaoException {
+    public void testRetrieveSortedByDateCertsAsc() {
         List<GiftCertificateEntity> entities = repository
                 .sortCertificatesByCreateDate("asc", 10, 1);
         assertEquals(10, entities.size());
@@ -185,7 +185,7 @@ class CertificateRepositoryImplTest {
     }
 
     @Test
-    public void testRetrieveSortedByDateCertsDesc() throws DaoException {
+    public void testRetrieveSortedByDateCertsDesc() {
         List<GiftCertificateEntity> entities = repository
                 .sortCertificatesByCreateDate("desc", 10, 1);
         assertEquals(10, entities.size());
@@ -194,7 +194,7 @@ class CertificateRepositoryImplTest {
     }
 
     @Test
-    public void testRetrieveSortedByDateCertsException() throws DaoException {
+    public void testRetrieveSortedByDateCertsException() {
         assertThrows(IllegalArgumentException.class, () -> repository
                 .sortCertificatesByCreateDate("awef", 10, 1));
     }

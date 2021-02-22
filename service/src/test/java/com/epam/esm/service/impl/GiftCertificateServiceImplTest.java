@@ -94,13 +94,13 @@ class GiftCertificateServiceImplTest {
         certDTO.setCreateDate(Instant.now().toString());
         certDTO.setLastUpdateDate(Instant.now().toString());
         certDTO.setDuration(1);
-        TagDTO dto = TagDTO.builder().id(1L).build();
+        TagDTO dto = TagDTO.builder().id(1L).name("aaa").build();
         Set<TagDTO> setTag = new HashSet<>();
         setTag.add(dto);
         certDTO.setTags(setTag);
-        Mockito.when(repository.create(Mockito.any())).thenReturn(7);
+        Mockito.when(repository.create(Mockito.any())).thenReturn(1);
         int actual = service.create(certDTO);
-        assertEquals(actual, 7);
+        assertEquals(1, actual);
     }
 
     @Test
@@ -156,7 +156,7 @@ class GiftCertificateServiceImplTest {
     public void testSortingIncField(String field) throws DaoException, ServiceException {
         List<GiftCertificateEntity> resultList = new ArrayList<>();
         resultList.add(new GiftCertificateEntity().builder().id(1).build());
-        Mockito.when(repository.sortCertificatesByName(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
+        Mockito.when(repository.sortCertificatesByCreateDate(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(resultList);
         Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO().builder().id(1)
                 .build());
@@ -166,14 +166,12 @@ class GiftCertificateServiceImplTest {
 
     @Test
     public void testExceptionSort() throws DaoException {
-        Mockito.when(repository.sortCertificatesByName(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
+        Mockito.when(repository.sortCertificatesByCreateDate(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenThrow(new DaoException());
         Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO().builder().id(1)
                 .build());
-        Throwable throwable = assertThrows(ServiceException.class, () -> service.sortByField("create_date",
+        assertThrows(ServiceException.class, () -> service.sortByField("create_date",
                 "asc", 1, 1));
-        String expected = "exception in dao";
-        assertEquals(expected, throwable.getMessage());
 
     }
 
