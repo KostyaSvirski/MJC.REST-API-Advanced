@@ -52,19 +52,6 @@ class CertificateRepositoryImplTest {
         }
     }
 
-    @AfterEach
-    public void deleteDefaultData() {
-        int i = 1;
-        while (true) {
-            if (repository.find(i).isPresent() && i <= 100) {
-                repository.delete(i);
-                i++;
-            } else {
-                break;
-            }
-        }
-    }
-
     @Test
     public void testCreate() {
         GiftCertificateEntity cert = new GiftCertificateEntity();
@@ -97,9 +84,41 @@ class CertificateRepositoryImplTest {
         tagSec.setName("tag sec");
         cert.addTag(tagSec);
         int result = repository.create(cert);
-        assertEquals(101, result);
+        assertTrue(result > 0);
         GiftCertificateEntity certFromRepo = repository.find(result).get();
         assertEquals(2, certFromRepo.getTagsDependsOnCertificate().size());
+    }
+
+    @Test
+    public void testCreateTwoCertWithSimilarTags() {
+        GiftCertificateEntity cert = new GiftCertificateEntity();
+        cert.setName("name");
+        cert.setDescription("descr");
+        cert.setCreateDate(LocalDate.now());
+        cert.setPrice(100);
+        cert.setDuration(10);
+        cert.setLastUpdateDate(LocalDateTime.now());
+        TagEntity tag = new TagEntity();
+        tag.setName("tag");
+        cert.addTag(tag);
+        int result = repository.create(cert);
+        assertTrue(result > 0);
+        GiftCertificateEntity certSec = new GiftCertificateEntity();
+        certSec.setName("nameSec");
+        certSec.setDescription("descrSec");
+        certSec.setCreateDate(LocalDate.now());
+        certSec.setPrice(100);
+        certSec.setDuration(10);
+        certSec.setLastUpdateDate(LocalDateTime.now());
+        TagEntity tagSec = new TagEntity();
+        tagSec.setName("tag");
+        tagSec.setId(1);
+        certSec.addTag(tagSec);
+        int resultSec = repository.create(certSec);
+        assertTrue(resultSec > 0);
+        GiftCertificateEntity certFromRepo = repository.find(result).get();
+        assertEquals(2, certFromRepo.getTagsDependsOnCertificate().stream().findAny().get()
+                .getCertificateEntitySet().size());
     }
 
     @Test
@@ -116,21 +135,21 @@ class CertificateRepositoryImplTest {
         cert.addTag(tag);
         int result = repository.create(cert);
         cert = repository.find(result).get();
-        assertEquals(101, result);
+        assertTrue(result > 0);
         cert.setName("new name");
         TagEntity newTag = new TagEntity();
         newTag.setName("tag new ");
         cert.removeTag(tag);
         cert.addTag(newTag);
         repository.update(cert);
-        GiftCertificateEntity certFromRepo = repository.find(101).get();
-        assertEquals(certFromRepo.getId(), result);
-        assertEquals(certFromRepo.getName(), "new name");
+        GiftCertificateEntity certFromRepo = repository.find(result).get();
+        assertEquals(result, certFromRepo.getId());
+        assertEquals("new name", certFromRepo.getName());
     }
 
     @Test
     public void testFindSpecificCert() {
-        Optional<GiftCertificateEntity> cert = repository.find(1);
+        Optional<GiftCertificateEntity> cert = repository.find(2);
         assertTrue(cert.isPresent());
         Set<TagEntity> tagsDependsOnCert = cert.get().getTagsDependsOnCertificate();
         assertNotNull(cert);
@@ -157,7 +176,7 @@ class CertificateRepositoryImplTest {
         List<GiftCertificateEntity> entities = repository
                 .sortCertificatesByName("asc", 10, 1);
         assertEquals(10, entities.size());
-        assertEquals("name 0", entities.get(0).getName());
+        assertTrue(entities.get(0).getName().compareTo(entities.get(entities.size() - 1).getName()) < 0);
     }
 
     @Test
@@ -165,13 +184,12 @@ class CertificateRepositoryImplTest {
         List<GiftCertificateEntity> entities = repository
                 .sortCertificatesByName("desc", 10, 1);
         assertEquals(10, entities.size());
-        assertEquals("name 99", entities.get(0).getName());
-        assertEquals("name 90", entities.get(entities.size() - 1).getName());
+        assertTrue(entities.get(0).getName().compareTo(entities.get(entities.size() - 1).getName()) > 0);
     }
 
     @Test
     public void testRetrieveSortedByNameCertsException() {
-        assertThrows(DaoException.class, () -> repository
+        assertThrows(RuntimeException.class, () -> repository
                 .sortCertificatesByName("awef", 10, 1));
     }
 
@@ -180,8 +198,7 @@ class CertificateRepositoryImplTest {
         List<GiftCertificateEntity> entities = repository
                 .sortCertificatesByCreateDate("asc", 10, 1);
         assertEquals(10, entities.size());
-        assertEquals(-1, entities.get(0).getCreateDate()
-                .compareTo(entities.get(entities.size() - 1).getCreateDate()));
+        assertTrue(entities.get(0).getCreateDate().compareTo(entities.get(entities.size() - 1).getCreateDate()) == 0);
     }
 
     @Test
@@ -189,8 +206,7 @@ class CertificateRepositoryImplTest {
         List<GiftCertificateEntity> entities = repository
                 .sortCertificatesByCreateDate("desc", 10, 1);
         assertEquals(10, entities.size());
-        assertEquals(1, entities.get(0).getCreateDate()
-                .compareTo(entities.get(entities.size() - 1).getCreateDate()));
+        assertTrue(entities.get(0).getCreateDate().compareTo(entities.get(entities.size() - 1).getCreateDate()) == 0);
     }
 
     @Test

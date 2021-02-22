@@ -20,6 +20,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -32,8 +35,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ContextConfiguration(classes = ServiceConfig.class)
-@ExtendWith(SpringExtension.class)
-@SpringJUnitConfig
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class GiftCertificateServiceImplTest {
 
     @Mock
@@ -53,7 +56,7 @@ class GiftCertificateServiceImplTest {
     }
 
     @Test
-    public void testFindAll() throws DaoException, ServiceException {
+    public void testFindAll() {
         GiftCertificateEntity entity = new GiftCertificateEntity();
         entity.setId(1);
         List<GiftCertificateEntity> resultList = new ArrayList<>();
@@ -67,7 +70,7 @@ class GiftCertificateServiceImplTest {
 
     @ParameterizedTest
     @ValueSource(longs = {1, 2, 3, 4, 5})
-    public void testFindSpecificCert(long id) throws DaoException, ServiceException {
+    public void testFindSpecificCert(long id) {
         GiftCertificateEntity entity = new GiftCertificateEntity();
         entity.setId(id);
         Optional<GiftCertificateEntity> certWrapper = Optional.of(entity);
@@ -79,7 +82,7 @@ class GiftCertificateServiceImplTest {
     }
 
     @Test
-    public void testFindNotExistingCert() throws DaoException, ServiceException {
+    public void testFindNotExistingCert() {
         Mockito.when(repository.find(Mockito.anyLong()))
                 .thenReturn(Optional.empty());
         Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(null);
@@ -87,7 +90,7 @@ class GiftCertificateServiceImplTest {
     }
 
     @Test
-    public void testCreate() throws DaoException, ServiceException {
+    public void testCreate() {
         GiftCertificateDTO certDTO = new GiftCertificateDTO();
         certDTO.setName("aaaa");
         certDTO.setPrice(100L);
@@ -98,17 +101,17 @@ class GiftCertificateServiceImplTest {
         Set<TagDTO> setTag = new HashSet<>();
         setTag.add(dto);
         certDTO.setTags(setTag);
-        Mockito.when(repository.create(Mockito.any())).thenReturn(1);
+        Mockito.when(repository.create(dtoToEntityConverter.apply(certDTO))).thenReturn(1);
         int actual = service.create(certDTO);
         assertEquals(1, actual);
     }
 
     @Test
-    public void testUpdate() throws DaoException {
+    public void testUpdate() {
         GiftCertificateDTO certDTO = new GiftCertificateDTO();
         certDTO.setName("aaaa");
         certDTO.setPrice(100);
-        Mockito.doThrow(new DaoException()).when(repository).update(Mockito.any());
+        Mockito.doThrow(new RuntimeException()).when(repository).update(Mockito.any());
         assertThrows(ServiceException.class, () -> service.update(certDTO, 1));
     }
 
@@ -167,10 +170,10 @@ class GiftCertificateServiceImplTest {
     @Test
     public void testExceptionSort() throws DaoException {
         Mockito.when(repository.sortCertificatesByCreateDate(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
-                .thenThrow(new DaoException());
+                .thenThrow(new RuntimeException());
         Mockito.when(entityToDTOConverter.apply(Mockito.any())).thenReturn(new GiftCertificateDTO().builder().id(1)
                 .build());
-        assertThrows(ServiceException.class, () -> service.sortByField("create_date",
+        assertThrows(RuntimeException.class, () -> service.sortByField("create_date",
                 "asc", 1, 1));
 
     }

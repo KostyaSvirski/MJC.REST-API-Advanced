@@ -1,6 +1,7 @@
 package com.epam.esm.hibernate.impl;
 
 import com.epam.esm.hibernate.TagRepository;
+import com.epam.esm.persistence.GiftCertificateEntity;
 import com.epam.esm.persistence.TagEntity;
 import org.springframework.stereotype.Repository;
 
@@ -8,6 +9,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public class TagRepositoryImpl implements TagRepository {
@@ -32,13 +34,19 @@ public class TagRepositoryImpl implements TagRepository {
 
     @Override
     public int create(TagEntity entity) {
-        em.persist(entity);
+        if(entity.getCertificateEntitySet().stream().anyMatch(cert -> cert.getId() != 0)) {
+            entity = em.merge(entity);
+        } else {
+            em.persist(entity);
+        }
         return (int) entity.getId();
     }
 
     @Override
     public void delete(long id) {
         TagEntity tagToDelete = em.find(TagEntity.class, id);
+        Set<GiftCertificateEntity> certificateEntitySet = tagToDelete.getCertificateEntitySet();
+        certificateEntitySet.forEach(giftCertificateEntity -> giftCertificateEntity.removeTag(tagToDelete));
         em.remove(tagToDelete);
     }
 }

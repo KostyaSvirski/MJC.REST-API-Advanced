@@ -18,6 +18,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -30,8 +33,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ContextConfiguration(classes = ServiceConfig.class)
-@ExtendWith(SpringExtension.class)
-@SpringJUnitConfig
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class TagServiceImplTest {
 
     @Mock
@@ -50,7 +53,7 @@ class TagServiceImplTest {
 
     @ParameterizedTest
     @ValueSource(longs = {1, 2, 3, 4})
-    public void testCreate(long id) throws DaoException, ServiceException {
+    public void testCreate(long id) {
         TagDTO tag = new TagDTO(id, "gg");
         Mockito.when(converterToEntity.apply(tag)).thenReturn(new TagEntity().builder().id(id).build());
         Mockito.when(repository.create(Mockito.any())).thenReturn((int) id);
@@ -59,7 +62,7 @@ class TagServiceImplTest {
     }
 
     @Test
-    public void testFindAll() throws DaoException, ServiceException {
+    public void testFindAll() {
         Mockito.when(repository.findAll(Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(Collections.singletonList(new TagEntity().builder().id(1).build()));
         Mockito.when(converterToDTO.apply(Mockito.any())).thenReturn(new TagDTO());
@@ -68,15 +71,15 @@ class TagServiceImplTest {
     }
 
     @Test
-    public void testFindAllException() throws DaoException {
-        Mockito.when(repository.findAll(Mockito.anyInt(), Mockito.anyInt())).thenThrow(new DaoException());
-        assertThrows(ServiceException.class,
+    public void testFindAllException() {
+        Mockito.when(repository.findAll(Mockito.anyInt(), Mockito.anyInt())).thenThrow(new RuntimeException());
+        assertThrows(Throwable.class,
                 () -> service.findAll(Mockito.anyInt(), Mockito.anyInt()));
     }
 
     @ParameterizedTest
     @ValueSource(longs = {1, 2, 3, 4})
-    public void testFindSpecificTag(long id) throws DaoException, ServiceException {
+    public void testFindSpecificTag(long id) {
         Mockito.when(repository.find(Mockito.eq(id)))
                 .thenReturn(Optional.of(new TagEntity().builder().id(id).build()));
         Mockito.when(converterToDTO.apply(Mockito.any())).thenReturn(new TagDTO().builder().id(id).build());
@@ -85,7 +88,7 @@ class TagServiceImplTest {
     }
 
     @Test
-    public void testFindSpecificTagNotFound() throws DaoException, ServiceException {
+    public void testFindSpecificTagNotFound() {
         Mockito.when(repository.find(Mockito.anyLong())).thenReturn(Optional.empty());
         Optional<TagDTO> actual = service.find(Mockito.anyLong());
         assertEquals(Optional.empty(), actual);
@@ -94,7 +97,7 @@ class TagServiceImplTest {
 
     @ParameterizedTest
     @ValueSource(longs = {1, 3, 6})
-    public void testDelete(long id) throws DaoException {
+    public void testDelete(long id) {
         Mockito.doNothing().when(repository).delete(id);
     }
 }

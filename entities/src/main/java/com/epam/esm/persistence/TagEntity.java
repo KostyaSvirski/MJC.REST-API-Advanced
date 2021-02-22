@@ -29,10 +29,8 @@ public class TagEntity {
     @Column(name = "name_of_tag")
     private String name;
     @ManyToMany(fetch = FetchType.EAGER,
-            cascade = {CascadeType.PERSIST,
-                    CascadeType.DETACH,
-                    CascadeType.REFRESH,
-                    CascadeType.REMOVE}, mappedBy = "tagsDependsOnCertificate")
+            cascade = {CascadeType.PERSIST, CascadeType.DETACH, CascadeType.REFRESH, CascadeType.REMOVE},
+            mappedBy = "tagsDependsOnCertificate")
     @Builder.Default
     @EqualsAndHashCode.Exclude
     @ToString.Exclude

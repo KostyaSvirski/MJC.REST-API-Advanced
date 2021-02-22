@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -86,8 +88,8 @@ public class GiftCertificateController {
 
     @PostMapping("/")
     public ResponseEntity<?> createNewCertificate(@RequestBody GiftCertificateDTO certificateDTO) {
-        certificateDTO.setCreateDate(Instant.now().toString());
-        certificateDTO.setLastUpdateDate(Instant.now().toString());
+        certificateDTO.setCreateDate(LocalDate.now().toString());
+        certificateDTO.setLastUpdateDate(LocalDateTime.now().toString());
         try {
             int result = service.create(certificateDTO);
             if (result != 0) {

@@ -79,13 +79,13 @@ class TagRepositoryImplTest {
         certSec.setLastUpdateDate(LocalDateTime.now());
         tag.addCertificate(certSec);
         int id = repository.create(tag);
-        assertEquals(101, id);
+        assertTrue( id > 0);
         TagEntity tagFromRepo = repository.find(id).get();
         assertEquals(2, tagFromRepo.getCertificateEntitySet().size());
     }
 
     @Test
-    public void testDeleteTag() throws DaoException {
+    public void testDeleteTag() {
         repository.delete(100);
         Optional<TagEntity> result = repository.find(100);
         assertFalse(result.isPresent());
@@ -111,9 +111,9 @@ class TagRepositoryImplTest {
 
 
     @Test
-    public void testFindSpecificTag() throws DaoException {
-        Optional<TagEntity> result = repository.find(1);
+    public void testFindSpecificTag() {
+        Optional<TagEntity> result = repository.find(2);
         assertTrue(result.isPresent());
-        assertEquals(1, result.get().getId());
+        assertEquals(2, result.get().getId());
     }
 }

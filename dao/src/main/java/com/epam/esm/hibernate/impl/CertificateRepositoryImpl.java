@@ -2,6 +2,7 @@ package com.epam.esm.hibernate.impl;
 
 import com.epam.esm.hibernate.CertificateRepository;
 import com.epam.esm.persistence.GiftCertificateEntity;
+import com.epam.esm.persistence.TagEntity;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -9,6 +10,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public class CertificateRepositoryImpl implements CertificateRepository {
@@ -19,6 +21,9 @@ public class CertificateRepositoryImpl implements CertificateRepository {
     private static final String HQL_ORDER_BY_CREATE_DATE = "order by cert.createDate ";
     private static final String HQL_CONDITION_DESCRIPTION = "where cert.description =: description ";
     private static final String HQL_CONDITION_NAME = "where cert.name =: name ";
+    private static final String HQL_RETRIEVE_ALL_BY_TAG_NAME = "select distinct cert from GiftCertificateEntity cert" +
+            " join cert.tagsDependsOnCertificate tag" +
+            " where tag.name =: name";
 
     @PersistenceContext
     private EntityManager em;
@@ -39,7 +44,11 @@ public class CertificateRepositoryImpl implements CertificateRepository {
 
     @Override
     public int create(GiftCertificateEntity entity) {
-        em.persist(entity);
+        if(entity.getTagsDependsOnCertificate().stream().anyMatch(tag -> tag.getId()!=0)) {
+            entity = em.merge(entity);
+        } else {
+            em.persist(entity);
+        }
         return (int) entity.getId();
     }
 
@@ -47,12 +56,14 @@ public class CertificateRepositoryImpl implements CertificateRepository {
     @Override
     public void delete(long id) {
         GiftCertificateEntity certToDelete = em.find(GiftCertificateEntity.class, id);
+        Set<TagEntity> tagEntities = certToDelete.getTagsDependsOnCertificate();
+        tagEntities.forEach(tagEntity -> tagEntity.removeCertificate(certToDelete));
         em.remove(certToDelete);
     }
 
     @Override
-    public void update(GiftCertificateEntity certificateExampleForUpdate) {
-        em.merge(certificateExampleForUpdate);
+    public void update(GiftCertificateEntity certificateForUpdate) {
+        em.merge(certificateForUpdate);
     }
 
     @Override
@@ -91,9 +102,10 @@ public class CertificateRepositoryImpl implements CertificateRepository {
 
     }
 
-    // TODO: 09.02.2021
     @Override
     public List<GiftCertificateEntity> searchByTag(String nameOfTag, int limit, int page) {
-        return null;
+        Query query = em.createQuery(HQL_RETRIEVE_ALL_BY_TAG_NAME);
+        query.setParameter("name", nameOfTag);
+        return query.setFirstResult(limit * (page-1)).setMaxResults(limit).getResultList();
     }
 }

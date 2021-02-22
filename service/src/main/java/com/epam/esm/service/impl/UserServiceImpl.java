@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<UserDTO> find(long id) throws ServiceException {
+    public Optional<UserDTO> find(long id) {
         Optional<UserEntity> userFromDao = userRepository.find(id);
         return userFromDao.map(toUserDTOConverter);
     }

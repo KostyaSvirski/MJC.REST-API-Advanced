@@ -12,6 +12,6 @@ public class TagDTOToTagEntityConverter implements Function<TagDTO, TagEntity> {
 
     @Override
     public TagEntity apply(TagDTO tagDTO) {
-        return TagEntity.builder().name(tagDTO.getName()).build();
+        return TagEntity.builder().id(tagDTO.getId()).name(tagDTO.getName()).build();
     }
 }

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Builder
 public class TagDTO extends RepresentationModel<TagDTO> {
 
-    private Long id;
+    private long id;
     private String name;
 
 }

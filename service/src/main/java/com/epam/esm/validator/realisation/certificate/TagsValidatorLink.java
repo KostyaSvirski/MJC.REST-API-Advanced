@@ -14,7 +14,7 @@ public class TagsValidatorLink extends IntermediateCertificateLink {
             return checkNextLink(bean);
         }
         for (TagDTO tag : bean.getTags()) {
-            if (tag.getId() <= 0 || !validatorForTags.validate(tag)) {
+            if (tag.getId() < 0 || !validatorForTags.validate(tag)) {
                 return false;
             }
         }
