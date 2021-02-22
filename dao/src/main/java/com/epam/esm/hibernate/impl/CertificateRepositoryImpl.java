@@ -2,7 +2,6 @@ package com.epam.esm.hibernate.impl;
 
 import com.epam.esm.hibernate.CertificateRepository;
 import com.epam.esm.persistence.GiftCertificateEntity;
-import com.epam.esm.persistence.TagEntity;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -10,7 +9,6 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Repository
 public class CertificateRepositoryImpl implements CertificateRepository {
@@ -44,7 +42,7 @@ public class CertificateRepositoryImpl implements CertificateRepository {
 
     @Override
     public int create(GiftCertificateEntity entity) {
-        if(entity.getTagsDependsOnCertificate().stream().anyMatch(tag -> tag.getId()!=0)) {
+        if (entity.getTagsDependsOnCertificate().stream().anyMatch(tag -> tag.getId() != 0)) {
             entity = em.merge(entity);
         } else {
             em.persist(entity);
@@ -54,10 +52,8 @@ public class CertificateRepositoryImpl implements CertificateRepository {
 
 
     @Override
-    public void delete(long id) {
-        GiftCertificateEntity certToDelete = em.find(GiftCertificateEntity.class, id);
-        Set<TagEntity> tagEntities = certToDelete.getTagsDependsOnCertificate();
-        tagEntities.forEach(tagEntity -> tagEntity.removeCertificate(certToDelete));
+    public void delete(GiftCertificateEntity certToDelete) {
+        em.merge(certToDelete);
         em.remove(certToDelete);
     }
 
@@ -106,6 +102,6 @@ public class CertificateRepositoryImpl implements CertificateRepository {
     public List<GiftCertificateEntity> searchByTag(String nameOfTag, int limit, int page) {
         Query query = em.createQuery(HQL_RETRIEVE_ALL_BY_TAG_NAME);
         query.setParameter("name", nameOfTag);
-        return query.setFirstResult(limit * (page-1)).setMaxResults(limit).getResultList();
+        return query.setFirstResult(limit * (page - 1)).setMaxResults(limit).getResultList();
     }
 }

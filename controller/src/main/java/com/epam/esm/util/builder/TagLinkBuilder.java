@@ -4,7 +4,6 @@ import com.epam.esm.contoller.GiftCertificateController;
 import com.epam.esm.dto.TagDTO;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 
-// TODO: 16.02.2021
 public class TagLinkBuilder extends BuilderContainer<TagDTO> {
 
     public TagLinkBuilder(TagDTO hypermedia) {

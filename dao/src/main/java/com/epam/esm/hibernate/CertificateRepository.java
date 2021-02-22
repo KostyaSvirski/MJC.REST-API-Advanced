@@ -12,7 +12,7 @@ public interface CertificateRepository extends Repository<GiftCertificateEntity>
     int create(GiftCertificateEntity entity);
 
     @Transactional
-    void delete(long id);
+    void delete(GiftCertificateEntity entityToDelete);
 
     @Transactional
     void update(GiftCertificateEntity certificateForUpdate);

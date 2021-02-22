@@ -117,7 +117,7 @@ class CertificateRepositoryImplTest {
         int resultSec = repository.create(certSec);
         assertTrue(resultSec > 0);
         GiftCertificateEntity certFromRepo = repository.find(result).get();
-        assertEquals(2, certFromRepo.getTagsDependsOnCertificate().stream().findAny().get()
+        assertEquals(1, certFromRepo.getTagsDependsOnCertificate().stream().findAny().get()
                 .getCertificateEntitySet().size());
     }
 
@@ -166,9 +166,23 @@ class CertificateRepositoryImplTest {
 
     @Test
     public void testDeleteCert() {
-        repository.delete(1);
-        Optional<GiftCertificateEntity> cert = repository.find(1);
-        assertFalse(cert.isPresent());
+        GiftCertificateEntity cert = new GiftCertificateEntity();
+        cert.setName("name");
+        cert.setDescription("descr");
+        cert.setCreateDate(LocalDate.now());
+        cert.setPrice(100);
+        cert.setDuration(10);
+        cert.setLastUpdateDate(LocalDateTime.now());
+        TagEntity tag = new TagEntity();
+        tag.setName("tag");
+        cert.addTag(tag);
+        int id = repository.create(cert);
+        assertTrue(id > 0);
+        Optional<GiftCertificateEntity> certFromDaoAfterCreate = repository.find(id);
+        assertTrue(certFromDaoAfterCreate.isPresent());
+        repository.delete(certFromDaoAfterCreate.get());
+        Optional<GiftCertificateEntity> certFromDao = repository.find(1);
+        assertFalse(certFromDao.isPresent());
     }
 
     @Test

@@ -6,6 +6,7 @@ import com.epam.esm.dto.GiftCertificateDTO;
 import com.epam.esm.exception.ServiceException;
 import com.epam.esm.hibernate.CertificateRepository;
 import com.epam.esm.persistence.GiftCertificateEntity;
+import com.epam.esm.persistence.TagEntity;
 import com.epam.esm.service.GiftCertificateService;
 import com.epam.esm.validator.PreparedValidatorChain;
 import com.epam.esm.validator.realisation.IntermediateCertificateLink;
@@ -108,9 +109,13 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     @Override
     public void delete(long id) throws ServiceException {
-        Optional<GiftCertificateEntity> tagWrapper = repository.find(id);
-        if (tagWrapper.isPresent()) {
-            repository.delete(id);
+        Optional<GiftCertificateEntity> certWrapper = repository.find(id);
+        if (certWrapper.isPresent()) {
+            GiftCertificateEntity certToDelete = certWrapper.get();
+            Set<TagEntity> tagEntities = certToDelete.getTagsDependsOnCertificate();
+            tagEntities.forEach(tagEntity -> tagEntity.removeCertificate(certToDelete));
+            certToDelete.setTagsDependsOnCertificate(tagEntities);
+            repository.delete(certToDelete);
         } else {
             throw new ServiceException("not found");
         }
