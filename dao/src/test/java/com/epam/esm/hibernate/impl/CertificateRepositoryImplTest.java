@@ -3,6 +3,7 @@ package com.epam.esm.hibernate.impl;
 import com.epam.esm.config.ConfigDB;
 import com.epam.esm.exception.DaoException;
 import com.epam.esm.hibernate.CertificateRepository;
+import com.epam.esm.hibernate.TagRepository;
 import com.epam.esm.persistence.GiftCertificateEntity;
 import com.epam.esm.persistence.TagEntity;
 import org.junit.jupiter.api.AfterEach;
@@ -10,9 +11,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.metrics.StartupStep;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -180,8 +183,8 @@ class CertificateRepositoryImplTest {
         assertTrue(id > 0);
         Optional<GiftCertificateEntity> certFromDaoAfterCreate = repository.find(id);
         assertTrue(certFromDaoAfterCreate.isPresent());
-        repository.delete(certFromDaoAfterCreate.get());
-        Optional<GiftCertificateEntity> certFromDao = repository.find(1);
+        repository.delete(id);
+        Optional<GiftCertificateEntity> certFromDao = repository.find(id);
         assertFalse(certFromDao.isPresent());
     }
 

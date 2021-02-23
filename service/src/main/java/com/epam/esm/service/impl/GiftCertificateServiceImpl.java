@@ -16,6 +16,7 @@ import com.epam.esm.validator.realisation.sort.FieldValidatorLink;
 import com.epam.esm.validator.realisation.sort.MethodValidatorLink;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -72,7 +73,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
             GiftCertificateEntity certificateForUpdate = converterToEntity.apply((certificate));
             Optional<GiftCertificateEntity> certFromDao = repository.find(id);
             if (certFromDao.isPresent()) {
-                insertDataForUpdate(certificateForUpdate, certFromDao.get());
+                prepareDataForUpdate(certificateForUpdate, certFromDao.get());
                 repository.update(certificateForUpdate);
                 return true;
             } else {
@@ -82,28 +83,28 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return false;
     }
 
-    private void insertDataForUpdate
-            (GiftCertificateEntity example, GiftCertificateEntity cert) {
-        if (example.getName() != null) {
-            cert.setName(example.getName());
+    private void prepareDataForUpdate
+            (GiftCertificateEntity incomming, GiftCertificateEntity existing) {
+        if (incomming.getName() != null) {
+            existing.setName(incomming.getName());
         }
-        if (example.getDescription() != null) {
-            cert.setDescription(example.getDescription());
+        if (incomming.getDescription() != null) {
+            existing.setDescription(incomming.getDescription());
         }
-        if (example.getLastUpdateDate() != null) {
-            cert.setLastUpdateDate(example.getLastUpdateDate());
+        if (incomming.getLastUpdateDate() != null) {
+            existing.setLastUpdateDate(incomming.getLastUpdateDate());
         }
-        if (example.getCreateDate() != null) {
-            cert.setCreateDate(example.getCreateDate());
+        if (incomming.getCreateDate() != null) {
+            existing.setCreateDate(incomming.getCreateDate());
         }
-        if (example.getDuration() != 0) {
-            cert.setDuration(example.getDuration());
+        if (incomming.getDuration() != 0) {
+            existing.setDuration(incomming.getDuration());
         }
-        if (example.getPrice() != 0) {
-            cert.setPrice(example.getPrice());
+        if (incomming.getPrice() != 0) {
+            existing.setPrice(incomming.getPrice());
         }
-        if (example.getTagsDependsOnCertificate() != null) {
-            cert.setTagsDependsOnCertificate(example.getTagsDependsOnCertificate());
+        if (incomming.getTagsDependsOnCertificate() != null) {
+            existing.setTagsDependsOnCertificate(incomming.getTagsDependsOnCertificate());
         }
     }
 
@@ -111,11 +112,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     public void delete(long id) throws ServiceException {
         Optional<GiftCertificateEntity> certWrapper = repository.find(id);
         if (certWrapper.isPresent()) {
-            GiftCertificateEntity certToDelete = certWrapper.get();
-            Set<TagEntity> tagEntities = certToDelete.getTagsDependsOnCertificate();
-            tagEntities.forEach(tagEntity -> tagEntity.removeCertificate(certToDelete));
-            certToDelete.setTagsDependsOnCertificate(tagEntities);
-            repository.delete(certToDelete);
+            repository.delete(id);
         } else {
             throw new ServiceException("not found");
         }
