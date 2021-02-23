@@ -189,6 +189,13 @@ class CertificateRepositoryImplTest {
     }
 
     @Test
+    void testRetrieveByNameCerts() {
+        List<GiftCertificateEntity> entities = repository
+                .searchByName("name 1", 10, 1);
+        assertEquals(1, entities.size());
+    }
+
+    @Test
     public void testRetrieveSortedByNameCertsAsc() {
         List<GiftCertificateEntity> entities = repository
                 .sortCertificatesByName("asc", 10, 1);

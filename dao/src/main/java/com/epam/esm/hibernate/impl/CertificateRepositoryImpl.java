@@ -20,8 +20,8 @@ public class CertificateRepositoryImpl implements CertificateRepository {
     private static final String HQL_ORDER_BY_ID = "order by cert.id ";
     private static final String HQL_ORDER_BY_NAME = "order by cert.name ";
     private static final String HQL_ORDER_BY_CREATE_DATE = "order by cert.createDate ";
-    private static final String HQL_CONDITION_DESCRIPTION = "where cert.description =: description ";
-    private static final String HQL_CONDITION_NAME = "where cert.name =: name ";
+    private static final String HQL_CONDITION_DESCRIPTION = "where cert.description = ?1 ";
+    private static final String HQL_CONDITION_NAME = "where cert.name = ?1 ";
 /*    private static final String HQL_RETRIEVE_ALL_BY_TAG_NAME = "select distinct cert from GiftCertificateEntity cert" +
             " join cert.tagsDependsOnCertificate tag" +
             " where tag.name =: aaa";*/

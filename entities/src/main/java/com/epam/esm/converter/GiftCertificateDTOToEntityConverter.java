@@ -18,7 +18,7 @@ public class GiftCertificateDTOToEntityConverter implements Function<GiftCertifi
     public GiftCertificateEntity apply(GiftCertificateDTO certificateDTO) {
         return GiftCertificateEntity.builder().id(certificateDTO.getId())
                 .name(certificateDTO.getName())
-                .createDate(LocalDate.parse(certificateDTO.getCreateDate()))
+                .createDate(certificateDTO.getCreateDate() != null ? LocalDate.parse(certificateDTO.getCreateDate()) : null)
                 .lastUpdateDate(LocalDateTime.parse(certificateDTO.getLastUpdateDate()))
                 .description(certificateDTO.getDescription())
                 .duration(certificateDTO.getDuration())

@@ -71,10 +71,11 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
                 .linkWith(new PriceValidatorLink());
         if (chain.validate(certificate)) {
             GiftCertificateEntity certificateForUpdate = converterToEntity.apply((certificate));
-            Optional<GiftCertificateEntity> certFromDao = repository.find(id);
-            if (certFromDao.isPresent()) {
-                prepareDataForUpdate(certificateForUpdate, certFromDao.get());
-                repository.update(certificateForUpdate);
+            Optional<GiftCertificateEntity> existingWrapper = repository.find(id);
+            if (existingWrapper.isPresent()) {
+                GiftCertificateEntity existing = existingWrapper.get();
+                existing =  prepareDataForUpdate(certificateForUpdate, existing);
+                repository.update(existing);
                 return true;
             } else {
                 throw new ServiceException("not found");
@@ -83,7 +84,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return false;
     }
 
-    private void prepareDataForUpdate
+    private GiftCertificateEntity prepareDataForUpdate
             (GiftCertificateEntity incomming, GiftCertificateEntity existing) {
         if (incomming.getName() != null) {
             existing.setName(incomming.getName());
@@ -94,9 +95,6 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         if (incomming.getLastUpdateDate() != null) {
             existing.setLastUpdateDate(incomming.getLastUpdateDate());
         }
-        if (incomming.getCreateDate() != null) {
-            existing.setCreateDate(incomming.getCreateDate());
-        }
         if (incomming.getDuration() != 0) {
             existing.setDuration(incomming.getDuration());
         }
@@ -106,6 +104,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         if (incomming.getTagsDependsOnCertificate() != null) {
             existing.setTagsDependsOnCertificate(incomming.getTagsDependsOnCertificate());
         }
+        return existing;
     }
 
     @Override

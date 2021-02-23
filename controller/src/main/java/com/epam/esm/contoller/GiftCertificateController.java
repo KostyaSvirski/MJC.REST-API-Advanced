@@ -135,6 +135,7 @@ public class GiftCertificateController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<?> updateCertificate(@RequestBody GiftCertificateDTO certificate, @PathVariable long id) {
+        certificate.setLastUpdateDate(LocalDateTime.now().toString());
         try {
             boolean result = service.update(certificate, id);
             if (result) {

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,7 +78,7 @@ public class OrderController {
 
     @PostMapping("/")
     public ResponseEntity<?> createNewOrder(@RequestBody OrderDTO order) {
-        order.setPurchaseTime(Instant.now().toString());
+        order.setPurchaseTime(LocalDateTime.now().toString());
         try {
             int result = service.create(order);
             if (result != 0) {
