@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.4.3'
+}
+
+group 'com.epam'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":entities")
+    implementation project(":service")
+
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.3.8.RELEASE'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-hateoas', version: '2.3.8.RELEASE'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-gradle-plugin', version: '2.4.3'
+
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.7.0'
+
+}
+
+test {
+    useJUnitPlatform()
+}
